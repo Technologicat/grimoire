@@ -18,7 +18,8 @@ Claude Code asks for the settings when the plugin is enabled:
 - **Languages matched by stem**: comma-separated, such as `Finnish, Estonian`, for languages that inflect too
   much to list every form. Empty means whole-word forms only.
 
-The hooks run `python3`, which has to be Python 3.11 or later. Nothing else is installed.
+The hooks and the lookup tool's server run `python3`, which has to be Python 3.11 or later. Nothing else is
+installed.
 
 ## What it does
 
@@ -29,6 +30,9 @@ entries their definitions link to, up to two links deep. Each entry is given onc
   keeps them in ledgers there. Without them, a term matches only as it is written in the lorebook, so "hydra
   taxes" does not match *hydra tax*.
 - **A folder that changes is read again at the next message**, so an edited definition is used at once.
+
+**Claude can also look a term up**, with the `lorebook_lookup` tool, for one whose definition was not given: it
+gets the entry, a near miss taken as meant, the entries that mention the term, or a plain "not defined".
 - **What each session was given** is kept in the plugin's data folder, and removed when the session has not been
   used for 30 days.
 

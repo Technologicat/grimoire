@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "lorebook": {
+      "command": "python3",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/mcp_server.py"],
+      "env": {
+        "GRIMOIRE_LOREBOOK_DIR": "${user_config.lorebook_dir}",
+        "GRIMOIRE_LEDGER_DIR": "${user_config.ledger_dir}",
+        "GRIMOIRE_STEM_LANGUAGES": "${user_config.stem_languages}"
+      }
+    }
+  }
+}

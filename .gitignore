@@ -1,0 +1,13 @@
+# Local scratch area
+00_stuff/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/

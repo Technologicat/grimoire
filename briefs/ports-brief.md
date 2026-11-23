@@ -35,10 +35,18 @@ TypeScript, so one translation of the core serves both.
 - **The core is copied from Raven, never edited here.** `lorebookcore.py` and its conformance cases,
   `lorebook_conformance.json`, come from a Raven checkout by a sync script, which records the Raven commit
   they came from. A change to the core is made in Raven and synced.
+  - **The sync reads from a git ref, never from Raven's working tree** (2026-11-23): `git show <ref>:<path>`,
+    defaulting to `origin/main` after a fetch. Raven's main tree is often mid-work in another session, dirty
+    or behind, and a ref is also what makes the recorded commit true of what was copied.
+  - **CI checks that the synced files are unedited** (maintainer, 2026-11-23): it fetches Raven at the
+    recorded commit and byte-compares them, which turns the rule from a convention into a check.
 - **Every implementation of the core runs the conformance cases in CI**: the Python copy, and the TypeScript
   translation. A translation that has fallen behind Raven fails there.
 - **Python 3.11 is the floor**, the oldest version still supported (3.10 reached its end of life in October
-  2026), and the core's own.
+  2026), and the core's own. The dev venv runs 3.14 (maintainer, 2026-11-23); CI covers 3.11 to 3.15.
+- **The JS dev environment is chosen for how well the agent works in it** (maintainer, 2026-11-23), not for
+  the fewest installs: an install costs little, and goes into `NEW-MACHINE-SETUP.md`. Chosen at step 4, when
+  it is first needed.
 - **The terms' inflected forms are read from Raven's ledgers**, where Raven runs on the same machine, and are
   never generated inside a hook. Generating them needs an LLM and takes minutes. The ledger format is
   Raven's [`sweep-ledger.md`](https://github.com/Technologicat/raven/blob/main/raven/librarian/sweep-ledger.md).
@@ -56,8 +64,12 @@ The porting guide's *Hosts* section has it in full. In short:
   - The record of what was given lives in `${CLAUDE_PLUGIN_DATA}`, keyed by the session id.
   - The folder is a `userConfig` setting of type `directory`.
   - **To verify before building**: that a plugin's MCP server gives the model a callable lookup tool.
+  - **To verify before building**: whether an installed plugin is copied into a cache, so that a hook cannot
+    reach a core outside the plugin's own directory, and whether a symlink survives the copy. If not, the
+    sync script writes a copy into the plugin too, and CI checks the copies are identical.
 - **Open WebUI**: Python. Its filters are recalled to be able to change a conversation before the model sees
-  it; **to verify**.
+  it; **to verify**. A function is recalled to be one file pasted into the UI, which would mean inlining the
+  core into it by a build step; **to verify** as well.
 - **pi**: an extension's `before_agent_start` can store a typed message in the session and send it to the model,
   the nearest thing to Raven's stored round; `pi.registerTool` offers the lookup. Recognizing its own messages
   on the branch is inferred, **to verify**.

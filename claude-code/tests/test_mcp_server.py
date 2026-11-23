@@ -84,6 +84,6 @@ class TestLookup:
         assert "Edited." in second
 
     def test_an_unset_folder_is_said_so(self):
-        for unset in ("", "${user_config.lorebook_dir}"):
-            (reply,) = converse([call("fup")], lorebook_dir=unset)
-            assert "not set" in reply["result"]["content"][0]["text"]
+        # Claude Code passes a setting left empty as an empty string (observed 2026-11-23).
+        (reply,) = converse([call("fup")], lorebook_dir="")
+        assert "not set" in reply["result"]["content"][0]["text"]

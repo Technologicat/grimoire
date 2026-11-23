@@ -30,9 +30,7 @@ SERVER_INFO = {"name": "grimoire", "version": "0"}
 # them to this server under names of its own.
 def setting(name: str) -> str:
     """A setting from the environment, stripped; empty if unset."""
-    value = os.environ.get(f"GRIMOIRE_{name.upper()}", "").strip()
-    # An option left empty may reach us as its placeholder, unsubstituted; read it as unset.
-    return "" if value.startswith("${") else value
+    return os.environ.get(f"GRIMOIRE_{name.upper()}", "").strip()
 
 
 def tool() -> dict[str, Any]:

@@ -79,6 +79,14 @@ The porting guide's *Hosts* section has it in full. In short:
       MCP server config as `${user_config.KEY}`.
     - `${CLAUDE_PLUGIN_DATA}` is `~/.claude/plugins/data/<id>/`, kept across updates, removed on uninstall.
     - Nothing is said about which Python runs a hook; the port assumes `python3` on the path, 3.11 or later.
+  - **Observed in a live install** from a local-path marketplace (2026-11-23):
+    - The hook's definitions arrive as a system reminder, with the linked entries after them, and the session's
+      record is written.
+    - The MCP server's tool appears as `mcp__plugin_grimoire_lorebook__lorebook_lookup`, with no approval prompt.
+    - A setting left empty is not stored, and reaches the MCP server as an empty string.
+    - The plugin is copied to `cache/grimoire/grimoire/<12 hex digits of the commit>/`, but a local-path
+      marketplace's plugin **runs from the repository, not the cache**, so that install does not exercise the
+      copy. An install from GitHub does.
   - **Decided** (maintainer, 2026-11-23):
     - **The plugin carries its own copy of the core**, written by the sync script and covered by `--check`,
       rather than a symlink, which a local-path install would skip.

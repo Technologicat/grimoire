@@ -61,15 +61,39 @@ TypeScript, so one translation of the core serves both.
 
 The porting guide's *Hosts* section has it in full. In short:
 
-- **Claude Code** (checked against the hooks and plugins references, 2026-11-23):
-  - A `UserPromptSubmit` hook gives the definitions as `additionalContext`, at most 10,000 characters per output.
-  - A `SessionStart` hook matching `compact` gives them again after compaction, which summarizes them away.
-  - The record of what was given lives in `${CLAUDE_PLUGIN_DATA}`, keyed by the session id.
-  - The folder is a `userConfig` setting of type `directory`.
-  - **To verify before building**: that a plugin's MCP server gives the model a callable lookup tool.
-  - **To verify before building**: whether an installed plugin is copied into a cache, so that a hook cannot
-    reach a core outside the plugin's own directory, and whether a symlink survives the copy. If not, the
-    sync script writes a copy into the plugin too, and CI checks the copies are identical.
+- **Claude Code** (checked against the hooks, plugins and MCP docs at code.claude.com, 2026-11-23):
+  - **Found in the docs:**
+    - A `UserPromptSubmit` hook gets `session_id` and `prompt` on stdin, and gives the definitions as
+      `hookSpecificOutput.additionalContext`. Its default timeout is 30 seconds.
+    - **At most 10,000 characters per hook output**; over that, the output is replaced by a file path and a
+      2,000-character preview. Taken as good enough (maintainer, 2026-11-23): the lookup tool is there, and the
+      preview is context enough for the model to call it.
+    - A `SessionStart` hook can match `compact`, and can return `additionalContext` too.
+    - A plugin's MCP server starts when the plugin is enabled, and its tools reach the model as
+      `mcp__plugin_<plugin>_<server>__<tool>`.
+    - An install copies **only the plugin's directory** into a cache; a path above it is not copied, and is
+      rejected. A symlink to elsewhere in the marketplace is dereferenced on a git install, but skipped on a
+      local-path one.
+    - A `marketplace.json` at the repository root can list a plugin at a relative path, `"./claude-code"`.
+    - `userConfig` has a `directory` type, prompted for at enable; hooks get it as `CLAUDE_PLUGIN_OPTION_<KEY>`,
+      MCP server config as `${user_config.KEY}`.
+    - `${CLAUDE_PLUGIN_DATA}` is `~/.claude/plugins/data/<id>/`, kept across updates, removed on uninstall.
+    - Nothing is said about which Python runs a hook; the port assumes `python3` on the path, 3.11 or later.
+  - **Decided** (maintainer, 2026-11-23):
+    - **The plugin carries its own copy of the core**, written by the sync script and covered by `--check`,
+      rather than a symlink, which a local-path install would skip.
+    - **The MCP server is standard library only**, a small stdio JSON-RPC server, so that it runs on the same
+      `python3` as the hooks and installs nothing.
+    - **The forms come from every ledger in Raven's folder**, the newest answer whose digest matches the term as
+      it is now winning for each term. Forms are read from every language; **stems are off by default, with a
+      setting to turn them on** for the languages that want them.
+    - **Only the prompt is scanned**, not the four messages before it as in Raven: the transcript's format is
+      not documented, and it may lag. *Limitation, to document*: a term only in the model's last reply does
+      not fire.
+    - **After compaction the record is forgotten**, rather than the definitions given again: what a session
+      was given can exceed one hook output. *Limitation, to document*: definitions given before compaction
+      are given again only as their terms come up again, so until then the model has only the summary.
+    - **The budget counts characters**: 8,000 per prompt, under the hook output's cap, and 32,000 per session.
 - **Open WebUI**: Python. Its filters are recalled to be able to change a conversation before the model sees
   it; **to verify**. A function is recalled to be one file pasted into the UI, which would mean inlining the
   core into it by a build step; **to verify** as well.
@@ -88,6 +112,5 @@ The porting guide's *Hosts* section has it in full. In short:
 
 ## Open questions
 
-- How a Claude Code marketplace lays out a plugin in a repository that holds other things.
 - Which Raven commit a release of grimoire pins its core to, and how often to sync.
 - Whether the TypeScript ports share one package, or each carries the core.

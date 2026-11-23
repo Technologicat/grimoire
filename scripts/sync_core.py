@@ -18,13 +18,16 @@ import sys
 REPO = pathlib.Path(__file__).resolve().parent.parent
 CORE = REPO / "core"
 RECORD = CORE / "RAVEN_COMMIT"
+CLAUDE_CODE = REPO / "claude-code" / "scripts"
 
-# Raven's path → grimoire's. The runner imports the core as `from .. import lorebookcore`, so the
-# layout under `core/` mirrors Raven's under `raven/librarian/`.
+# Raven's path → the copies in grimoire. The runner imports the core as `from .. import lorebookcore`, so the
+# layout under `core/` mirrors Raven's under `raven/librarian/`. A port that is installed by copying its own
+# directory, as a Claude Code plugin is, carries a copy of the core inside it.
 FILES = {
-    "raven/librarian/lorebookcore.py": CORE / "lorebookcore.py",
-    "raven/librarian/tests/lorebook_conformance.json": CORE / "tests" / "lorebook_conformance.json",
-    "raven/librarian/tests/test_lorebookcore.py": CORE / "tests" / "test_lorebookcore.py",
+    "raven/librarian/lorebookcore.py": [CORE / "lorebookcore.py",
+                                        CLAUDE_CODE / "lorebookcore.py"],
+    "raven/librarian/tests/lorebook_conformance.json": [CORE / "tests" / "lorebook_conformance.json"],
+    "raven/librarian/tests/test_lorebookcore.py": [CORE / "tests" / "test_lorebookcore.py"],
 }
 
 
@@ -50,13 +53,14 @@ def sync(raven: pathlib.Path, *, ref: str, fetch: bool) -> None:
     if fetch:
         git(raven, "fetch", "--quiet", "origin")
     commit = resolve(raven, ref)
-    for source, target in FILES.items():
+    for source, targets in FILES.items():
         content = read(raven, commit, source)
-        before = target.read_bytes() if target.exists() else None
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(content)
-        status = "added" if before is None else ("unchanged" if before == content else "updated")
-        print(f"{status:>9}  {target.relative_to(REPO)}")
+        for target in targets:
+            before = target.read_bytes() if target.exists() else None
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(content)
+            status = "added" if before is None else ("unchanged" if before == content else "updated")
+            print(f"{status:>9}  {target.relative_to(REPO)}")
     RECORD.write_text(commit + "\n", encoding="utf-8")
     print(f"Synced from Raven {commit} ({ref}).")
 
@@ -65,15 +69,17 @@ def check(raven: pathlib.Path) -> bool:
     """Whether every copied file matches Raven at the recorded commit. Reports each one."""
     commit = RECORD.read_text(encoding="utf-8").strip()
     ok = True
-    for source, target in FILES.items():
-        if not target.exists():
-            print(f"  missing  {target.relative_to(REPO)}")
-            ok = False
-        elif target.read_bytes() != read(raven, commit, source):
-            print(f"   edited  {target.relative_to(REPO)}: differs from {source} at {commit}")
-            ok = False
-        else:
-            print(f"       ok  {target.relative_to(REPO)}")
+    for source, targets in FILES.items():
+        content = read(raven, commit, source)
+        for target in targets:
+            if not target.exists():
+                print(f"  missing  {target.relative_to(REPO)}")
+                ok = False
+            elif target.read_bytes() != content:
+                print(f"   edited  {target.relative_to(REPO)}: differs from {source} at {commit}")
+                ok = False
+            else:
+                print(f"       ok  {target.relative_to(REPO)}")
     print(f"{'Matches' if ok else 'Does not match'} Raven {commit}.")
     return ok
 

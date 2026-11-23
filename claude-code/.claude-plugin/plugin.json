@@ -1,0 +1,20 @@
+{
+  "name": "grimoire",
+  "description": "Gives Claude the definitions of your own terms when a term comes up in the conversation, from a folder of Markdown files.",
+  "author": {
+    "name": "Juha Jeronen",
+    "url": "https://github.com/Technologicat"
+  },
+  "homepage": "https://github.com/Technologicat/grimoire",
+  "repository": "https://github.com/Technologicat/grimoire",
+  "license": "BSD-2-Clause",
+  "keywords": ["lorebook", "glossary", "definitions", "raven"],
+  "userConfig": {
+    "lorebook_dir": {
+      "type": "directory",
+      "title": "Lorebook folder",
+      "description": "The folder of Markdown files holding your definitions, each entry a section whose header is the term.",
+      "required": true
+    }
+  }
+}

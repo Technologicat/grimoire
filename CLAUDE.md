@@ -14,7 +14,9 @@ reference for what a port takes and what its host supplies.
 ## The core is Raven's
 
 **Everything under `core/` is a copy, never edited here**: `lorebookcore.py`, and in `core/tests/` its
-conformance cases `lorebook_conformance.json` and their runner `test_lorebookcore.py`. A change to any of them is
+conformance cases `lorebook_conformance.json` and their runner `test_lorebookcore.py`. So is the Claude Code
+plugin's own copy of the core, `claude-code/scripts/lorebookcore.py`, which an installed plugin needs because
+only the plugin's directory is copied on install. A change to any of them is
 made in Raven, under `raven/librarian/`, and then synced with `python scripts/sync_core.py`, which records the
 Raven commit in `core/RAVEN_COMMIT`. An edit made here would be lost at the next sync, and CI fails on it:
 `scripts/sync_core.py --check` compares the copies against Raven at the recorded commit.

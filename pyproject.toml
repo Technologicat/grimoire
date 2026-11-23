@@ -55,6 +55,7 @@ exclude = [
     "node_modules",
     "00_stuff",                # local non-tracked scratch area
     "core",                    # Raven's, synced unedited; linted in Raven
+    "claude-code/scripts/lorebookcore.py",   # the same, the plugin's copy
 ]
 
 [tool.ruff.lint]

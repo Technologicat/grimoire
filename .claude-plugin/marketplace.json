@@ -1,0 +1,15 @@
+{
+  "name": "grimoire",
+  "description": "The lorebook of Raven, for other LLM frontends.",
+  "owner": {
+    "name": "Juha Jeronen",
+    "url": "https://github.com/Technologicat"
+  },
+  "plugins": [
+    {
+      "name": "grimoire",
+      "source": "./claude-code",
+      "description": "Gives Claude the definitions of your own terms when a term comes up in the conversation."
+    }
+  ]
+}

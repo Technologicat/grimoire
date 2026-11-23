@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Copy the lorebook's core from Raven into grimoire, or check that the copy is unedited.
+"""Copy the lorebook's core from Raven into grimoire, and grimoire's shared modules into the ports; or check the copies.
 
     python scripts/sync_core.py                    # from origin/main of ../raven, after a fetch
     python scripts/sync_core.py --ref <commit>     # from a given commit, tag or branch
     python scripts/sync_core.py --check            # compare against Raven at the recorded commit
 
 The files are read out of Raven's git history, never its working tree, and the commit they came from is
-recorded in `core/RAVEN_COMMIT`. `--check` exits 1 if any file differs from that commit, which is how CI
-holds the copies to being copies.
+recorded in `core/RAVEN_COMMIT`. grimoire's own modules shared between ports, in `lib/`, are copied from the
+working tree. `--check` exits 1 if any copy differs from its source, which is how CI holds the copies to being
+copies.
 """
 
 import argparse
@@ -18,6 +19,7 @@ import sys
 REPO = pathlib.Path(__file__).resolve().parent.parent
 CORE = REPO / "core"
 RECORD = CORE / "RAVEN_COMMIT"
+LIB = REPO / "lib"
 CLAUDE_CODE = REPO / "claude-code" / "scripts"
 
 # Raven's path → the copies in grimoire. The runner imports the core as `from .. import lorebookcore`, so the
@@ -28,6 +30,11 @@ FILES = {
                                         CLAUDE_CODE / "lorebookcore.py"],
     "raven/librarian/tests/lorebook_conformance.json": [CORE / "tests" / "lorebook_conformance.json"],
     "raven/librarian/tests/test_lorebookcore.py": [CORE / "tests" / "test_lorebookcore.py"],
+}
+
+# grimoire's own modules shared between ports → the copies inside the ports that need one.
+LOCAL_FILES = {
+    LIB / "ledger.py": [CLAUDE_CODE / "ledger.py"],
 }
 
 
@@ -54,33 +61,43 @@ def sync(raven: pathlib.Path, *, ref: str, fetch: bool) -> None:
         git(raven, "fetch", "--quiet", "origin")
     commit = resolve(raven, ref)
     for source, targets in FILES.items():
-        content = read(raven, commit, source)
-        for target in targets:
-            before = target.read_bytes() if target.exists() else None
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(content)
-            status = "added" if before is None else ("unchanged" if before == content else "updated")
-            print(f"{status:>9}  {target.relative_to(REPO)}")
+        _write(read(raven, commit, source), targets)
     RECORD.write_text(commit + "\n", encoding="utf-8")
-    print(f"Synced from Raven {commit} ({ref}).")
+    for source, targets in LOCAL_FILES.items():
+        _write(source.read_bytes(), targets)
+    print(f"Synced from Raven {commit} ({ref}), and from lib/.")
+
+def _write(content: bytes, targets: list[pathlib.Path]) -> None:
+    for target in targets:
+        before = target.read_bytes() if target.exists() else None
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
+        status = "added" if before is None else ("unchanged" if before == content else "updated")
+        print(f"{status:>9}  {target.relative_to(REPO)}")
 
 
 def check(raven: pathlib.Path) -> bool:
-    """Whether every copied file matches Raven at the recorded commit. Reports each one."""
+    """Whether every copy matches its source: Raven at the recorded commit, or `lib/`. Reports each one."""
     commit = RECORD.read_text(encoding="utf-8").strip()
     ok = True
     for source, targets in FILES.items():
-        content = read(raven, commit, source)
-        for target in targets:
-            if not target.exists():
-                print(f"  missing  {target.relative_to(REPO)}")
-                ok = False
-            elif target.read_bytes() != content:
-                print(f"   edited  {target.relative_to(REPO)}: differs from {source} at {commit}")
-                ok = False
-            else:
-                print(f"       ok  {target.relative_to(REPO)}")
-    print(f"{'Matches' if ok else 'Does not match'} Raven {commit}.")
+        ok &= _compare(read(raven, commit, source), targets, f"{source} at {commit}")
+    for source, targets in LOCAL_FILES.items():
+        ok &= _compare(source.read_bytes(), targets, str(source.relative_to(REPO)))
+    print(f"{'Matches' if ok else 'Does not match'} Raven {commit}, and lib/.")
+    return ok
+
+def _compare(content: bytes, targets: list[pathlib.Path], source: str) -> bool:
+    ok = True
+    for target in targets:
+        if not target.exists():
+            print(f"  missing  {target.relative_to(REPO)}")
+            ok = False
+        elif target.read_bytes() != content:
+            print(f"   edited  {target.relative_to(REPO)}: differs from {source}")
+            ok = False
+        else:
+            print(f"       ok  {target.relative_to(REPO)}")
     return ok
 
 
@@ -91,7 +108,7 @@ def main() -> None:
     parser.add_argument("--ref", default="origin/main", help="what to sync from (default: %(default)s)")
     parser.add_argument("--no-fetch", dest="fetch", action="store_false", help="don't fetch Raven first")
     parser.add_argument("--check", action="store_true",
-                        help="compare the copies against Raven at the recorded commit, and change nothing")
+                        help="compare the copies against their sources, and change nothing")
     args = parser.parse_args()
 
     if args.check:

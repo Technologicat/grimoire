@@ -23,6 +23,14 @@ Raven commit in `core/RAVEN_COMMIT`. An edit made here would be lost at the next
 
 The TypeScript translation is grimoire's own, and is checked against the same conformance cases.
 
+## Shared modules are edited in `lib/`
+
+**grimoire's own code shared between ports lives in `lib/`**, and a port that is installed by copying its own
+directory carries a copy, written by the same sync script: `claude-code/scripts/ledger.py` is `lib/ledger.py`.
+Edit the one in `lib/`, then run `python scripts/sync_core.py`; `--check` fails on a copy that differs from
+its source. Tests for `lib/` are in `lib/tests/`, and import the modules side by side with the core, as a
+port's copies sit.
+
 ## Status
 
 Step 1 of the brief is built: the sync script, the synced core, and CI running the conformance cases and

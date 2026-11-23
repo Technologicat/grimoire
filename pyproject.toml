@@ -42,6 +42,8 @@ dev = [
 # The synced conformance runner imports the core as `from .. import lorebookcore`, which resolves
 # without `__init__.py` files under this mode, as in Raven.
 addopts = "--import-mode=importlib"
+# grimoire's own shared modules, and the core they import, as the copies inside a port find them: side by side.
+pythonpath = ["lib", "core"]
 
 [tool.ruff]
 line-length = 130
@@ -56,6 +58,7 @@ exclude = [
     "00_stuff",                # local non-tracked scratch area
     "core",                    # Raven's, synced unedited; linted in Raven
     "claude-code/scripts/lorebookcore.py",   # the same, the plugin's copy
+    "claude-code/scripts/ledger.py",         # a copy of lib/ledger.py, which is linted
 ]
 
 [tool.ruff.lint]

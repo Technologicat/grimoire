@@ -86,7 +86,12 @@ The porting guide's *Hosts* section has it in full. In short:
     - A setting left empty is not stored, and reaches the MCP server as an empty string.
     - The plugin is copied to `cache/grimoire/grimoire/<12 hex digits of the commit>/`, but a local-path
       marketplace's plugin **runs from the repository, not the cache**, so that install does not exercise the
-      copy. An install from GitHub does.
+      copy.
+    - **Installed from GitHub, it runs from the cache copy**, the hook and the MCP server alike, with the
+      plugin's own copies of the core and the ledger reader.
+    - **The version is the repository's latest commit**, not the plugin directory's: a commit touching only the
+      brief made a new one. So any commit counts as an update.
+    - Uninstalling removes the plugin's data folder, and with it every session's record.
   - **Decided** (maintainer, 2026-11-23):
     - **The plugin carries its own copy of the core**, written by the sync script and covered by `--check`,
       rather than a symlink, which a local-path install would skip.

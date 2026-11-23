@@ -23,4 +23,5 @@ The TypeScript translation is grimoire's own, and is checked against the same co
 
 ## Status
 
-Planning: nothing is built yet. The order of work is in the brief.
+Step 1 of the brief is built: the sync script, the synced core, and CI running the conformance cases and
+checking the copies. No port exists yet; the order of work is in the brief.

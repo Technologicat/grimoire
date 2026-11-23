@@ -7,7 +7,7 @@ coinages, a field's jargon, the special sense you give an ordinary word. The def
 Markdown files, each entry a section whose header is the term. Raven-librarian reads such a folder; grimoire
 lets Claude Code, Open WebUI, pi and LM Studio read the same one.
 
-**Status: planning.** Nothing is built yet. [`briefs/ports-brief.md`](briefs/ports-brief.md) is the plan, and
+**Status: early.** Raven's core is synced here and tested; no port is usable yet. [`briefs/ports-brief.md`](briefs/ports-brief.md) is the plan, and
 Raven's [porting guide](https://github.com/Technologicat/raven/blob/main/raven/librarian/lorebook-porting.md)
 describes what each port has to do.
 

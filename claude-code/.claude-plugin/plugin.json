@@ -15,6 +15,18 @@
       "title": "Lorebook folder",
       "description": "The folder of Markdown files holding your definitions, each entry a section whose header is the term.",
       "required": true
+    },
+    "ledger_dir": {
+      "type": "directory",
+      "title": "Inflected forms folder",
+      "description": "Where the terms' inflected forms are read from: Raven's expansion ledgers. Leave empty for Raven's own folder, ~/.config/raven/librarian/lorebook_expansion.",
+      "required": false
+    },
+    "stem_languages": {
+      "type": "string",
+      "title": "Languages matched by stem",
+      "description": "Comma-separated, such as \"Finnish, Estonian\": languages whose stems are used as well as their whole-word forms, for languages that inflect too much to list every form. Leave empty for whole-word forms only.",
+      "required": false
     }
   }
 }

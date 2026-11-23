@@ -38,6 +38,11 @@ dev = [
     "pyyaml>=6.0.3",           # validate .github/workflows/*.yml from the dev venv
 ]
 
+[tool.pytest.ini_options]
+# The synced conformance runner imports the core as `from .. import lorebookcore`, which resolves
+# without `__init__.py` files under this mode, as in Raven.
+addopts = "--import-mode=importlib"
+
 [tool.ruff]
 line-length = 130
 target-version = "py311"
@@ -49,7 +54,7 @@ exclude = [
     ".venv",
     "node_modules",
     "00_stuff",                # local non-tracked scratch area
-    "core/lorebookcore.py",    # Raven's, synced unedited; linted in Raven
+    "core",                    # Raven's, synced unedited; linted in Raven
 ]
 
 [tool.ruff.lint]

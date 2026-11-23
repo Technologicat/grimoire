@@ -32,9 +32,12 @@ TypeScript, so one translation of the core serves both.
   (maintainer, 2026-11-23). A model asking for a term that was not given happens on every host, and on a local
   model the definitions are safest given as a tool round, which presumes the tool: Raven measured that shape
   as the only one working across the local models tested.
-- **The core is copied from Raven, never edited here.** `lorebookcore.py` and its conformance cases,
-  `lorebook_conformance.json`, come from a Raven checkout by a sync script, which records the Raven commit
-  they came from. A change to the core is made in Raven and synced.
+- **The core is copied from Raven, never edited here.** `lorebookcore.py`, its conformance cases
+  `lorebook_conformance.json` and their runner `test_lorebookcore.py` come from a Raven checkout by a sync
+  script, which records the Raven commit they came from. A change to the core is made in Raven and synced.
+  - **The runner is synced too** (maintainer, 2026-11-23), rather than kept as an adapted copy, which could fall
+    behind a new field in the cases while still passing. Raven's runner imports the core relatively for this,
+    and runs under pytest's importlib import mode, as grimoire does.
   - **The sync reads from a git ref, never from Raven's working tree** (2026-11-23): `git show <ref>:<path>`,
     defaulting to `origin/main` after a fetch. Raven's main tree is often mid-work in another session, dirty
     or behind, and a ref is also what makes the recorded commit true of what was copied.

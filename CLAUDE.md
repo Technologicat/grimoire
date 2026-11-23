@@ -13,10 +13,11 @@ reference for what a port takes and what its host supplies.
 
 ## The core is Raven's
 
-**`lorebookcore.py` and `lorebook_conformance.json` are copies, never edited here.** A change to the core is
-made in Raven, `raven/librarian/lorebookcore.py`, with its conformance cases updated there, and then synced. An
-edit made here would be lost at the next sync, and would make this copy disagree with the cases it is tested
-against without anyone noticing.
+**Everything under `core/` is a copy, never edited here**: `lorebookcore.py`, and in `core/tests/` its
+conformance cases `lorebook_conformance.json` and their runner `test_lorebookcore.py`. A change to any of them is
+made in Raven, under `raven/librarian/`, and then synced with `python scripts/sync_core.py`, which records the
+Raven commit in `core/RAVEN_COMMIT`. An edit made here would be lost at the next sync, and CI fails on it:
+`scripts/sync_core.py --check` compares the copies against Raven at the recorded commit.
 
 The TypeScript translation is grimoire's own, and is checked against the same conformance cases.
 

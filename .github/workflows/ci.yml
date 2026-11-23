@@ -1,0 +1,79 @@
+# Lint and run the tests across the supported Python versions, and check that the core synced from
+# Raven is unedited.
+#
+# Customized for grimoire: not a distribution, so nothing is built or published; installed with PDM for
+# the dev tools only.
+
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash        # consistent shell across OSes (PDM/pytest invocations are identical)
+    strategy:
+      fail-fast: false
+      matrix:
+        # Full CPython matrix on Linux; newest stable CPython also on macOS and Windows, where the ports'
+        # hosts run too and `load` reads a folder off their filesystems.
+        os: [ubuntu-latest]
+        python-version: ["3.11", "3.12", "3.13", "3.14", "3.15"]
+        include:
+          - os: macos-latest
+            python-version: "3.14"
+          - os: windows-latest
+            python-version: "3.14"
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      with:
+        python-version: ${{ matrix.python-version }}
+        # Lets a Python at alpha/beta/rc resolve: the setup-python manifest marks
+        # prereleases unstable, so without this a bare version such as "3.16" resolves
+        # to nothing. A no-op wherever a stable release exists, so it stays in for good
+        # rather than being added and removed around each new Python.
+        allow-prereleases: true
+    - name: Install PDM
+      run: |
+        python -m pip install --upgrade pip
+        pip install pdm
+    - name: Create in-project virtualenv and install dependencies
+      run: |
+        # Point PDM at the interpreter `setup-python` already installed, rather than
+        # letting it fetch a second one — its index has no prerelease build, so asking
+        # for a version like "3.15" fails while that very interpreter is on PATH.
+        # Ask Python for its own path: under Git Bash on Windows, `which python` gives
+        # an MSYS path that PDM, a native Windows program, cannot resolve.
+        pdm use -f "$(python -c 'import sys; print(sys.executable)')"
+        pdm install
+    - name: Lint with ruff
+      run: pdm run ruff check .
+    - name: Run tests
+      run: pdm run pytest -v
+
+  core-unedited:
+    # The files under core/ are Raven's. This fetches Raven at the commit they were synced from and
+    # compares them byte for byte, so an edit made here fails CI instead of being lost at the next sync.
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - name: Fetch Raven at the recorded commit
+      run: |
+        git init -q raven
+        git -C raven fetch -q --depth 1 https://github.com/Technologicat/raven.git "$(cat core/RAVEN_COMMIT)"
+    - name: Compare the synced files
+      run: python3 scripts/sync_core.py --check --raven raven

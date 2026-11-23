@@ -106,9 +106,26 @@ The porting guide's *Hosts* section has it in full. In short:
 
 1. **The repository's bones**: the sync script and the synced core, and CI running the conformance cases on it.
 2. **Claude Code**: the two hooks, the per-session record, reading Raven's ledgers, and the lookup tool.
-3. **Open WebUI**.
-4. **The TypeScript core**, passing the conformance cases.
-5. **pi**, then **LM Studio**.
+3. **The ledger generator**, for a machine without a runnable Raven.
+4. **Open WebUI**.
+5. **The TypeScript core**, passing the conformance cases.
+6. **pi**, then **LM Studio**.
+
+## The ledger generator
+
+**Without the inflected forms a term fires only as written**, and listing the forms as aliases by hand is what
+users will not do (maintainer, 2026-11-23). Not every machine has a runnable Raven to generate them, so grimoire
+carries a generator of its own, which every port's users can run.
+
+- **grimoire's own code, writing Raven's format** (maintainer, 2026-11-23): standard library only, asking any
+  OpenAI-compatible endpoint, writing ledgers as `sweep-ledger.md` describes, so Raven reads them too. Ten terms
+  per batch, resumable, keeping the complete terms of a reply that runs on.
+- **The prompt, `raven/librarian/prompts/lorebook_expansion.md`, is synced from Raven** with the core.
+- **Rejected: moving the generator's pure parts into Raven's portable layer**, to be synced rather than
+  reimplemented. Measured 2026-11-23, they come to about 100 lines, mostly fully specified by `sweep-ledger.md`
+  and the porting guide, against a driver grimoire would write regardless at two to three times that, since
+  Raven's own driver runs on `llmclient` and `sweep.Sweep`. The leverage did not pay for a refactor across two
+  Raven modules and a second conformance file.
 
 ## Open questions
 

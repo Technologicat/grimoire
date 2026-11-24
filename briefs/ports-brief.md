@@ -134,6 +134,13 @@ carries a generator of its own, which every port's users can run.
   OpenAI-compatible endpoint, writing ledgers as `sweep-ledger.md` describes, so Raven reads them too. Ten terms
   per batch, resumable, keeping the complete terms of a reply that runs on.
 - **The prompt, `raven/librarian/prompts/lorebook_expansion.md`, is synced from Raven** with the core.
+- **Installed with pipx** (maintainer, 2026-11-24), as `grimoire-expand`, so that it runs on any machine without
+  knowing the repository's layout. Built with hatchling, which PDM drives like any backend.
+- **First run** (2026-11-24): `flash-next` on gufo, the 90-entry glossary, English forms and Finnish stems, 91
+  terms in ten batches, none failed. The ledger's fingerprint is the one Raven computes, checked against Raven's
+  code. English inflections fire; the Finnish answers are weaker, the model's and the prompt's doing rather than
+  grimoire's: "lift" got no Finnish forms, "ethnography" got its translation's. Improving them is Raven's prompt
+  work.
 - **Rejected: moving the generator's pure parts into Raven's portable layer**, to be synced rather than
   reimplemented. Measured 2026-11-23, they come to about 100 lines, mostly fully specified by `sweep-ledger.md`
   and the porting guide, against a driver grimoire would write regardless at two to three times that, since

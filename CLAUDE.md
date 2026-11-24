@@ -33,6 +33,6 @@ port's copies sit.
 
 ## Status
 
-Steps 1 and 2 of the brief are built: the sync script, the synced core, and CI running the conformance cases
-and checking the copies; and the Claude Code plugin, tested live from GitHub. Next is step 3, the ledger
-generator; the order of work is in the brief.
+Steps 1 to 3 of the brief are built: the sync script, the synced core, and CI running the conformance cases
+and checking the copies; the Claude Code plugin, tested live from GitHub; and the ledger generator,
+`grimoire-expand`, installed with pipx. Next is step 4, Open WebUI; the order of work is in the brief.

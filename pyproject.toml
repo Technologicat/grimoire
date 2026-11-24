@@ -13,10 +13,30 @@ dependencies = []
 Homepage = "https://github.com/Technologicat/grimoire"
 Repository = "https://github.com/Technologicat/grimoire"
 
-# Not a distribution: each port is installed into its frontend in that frontend's own way, so this file
-# carries only the dev environment and the tool config.
-[tool.pdm]
-distribution = false
+# What installs is the ledger generator: `pipx install git+https://github.com/Technologicat/grimoire`. Each port
+# is installed into its frontend in that frontend's own way.
+[project.scripts]
+grimoire-expand = "expand:main"
+
+# The generator's modules live in two folders and run side by side, as a port's copies do, so the wheel maps
+# them to top-level modules, with the prompt in `prompts/` beside the core, where `expand` looks for it.
+# Top-level modules are meant for pipx's venv of their own. Hatchling does the mapping in configuration
+# (`force-include`), and puts both folders on the path in an editable install (`dev-mode-dirs`); pdm-backend
+# takes one `package-dir`, and would need a build hook, with editable installs of two folders undocumented.
+# PDM drives either alike.
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+bypass-selection = true            # nothing is selected by package; `force-include` is the whole wheel
+dev-mode-dirs = ["lib", "core"]    # an editable install puts these on the path, so the modules import as installed
+
+[tool.hatch.build.targets.wheel.force-include]
+"lib/expand.py" = "expand.py"
+"lib/ledger.py" = "ledger.py"
+"core/lorebookcore.py" = "lorebookcore.py"
+"core/prompts/lorebook_expansion.md" = "prompts/lorebook_expansion.md"
 
 [dependency-groups]
 dev = [

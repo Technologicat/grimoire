@@ -17,6 +17,27 @@ lets Claude Code, Open WebUI, pi and LM Studio read the same one.
 
 What it does, its settings and its limitations: [`claude-code/README.md`](claude-code/README.md).
 
+## Inflected forms
+
+**A term matches however it is inflected only if its inflected forms have been generated**: "hydra taxes" for
+*hydra tax*, and in a language like Finnish nearly every use of a word. Raven generates them; on a machine without
+Raven, grimoire's generator does the same, asking any OpenAI-compatible LLM server:
+
+```
+pipx install git+https://github.com/Technologicat/grimoire
+grimoire-expand --lorebook ~/lorebook --url http://localhost:8080
+grimoire-expand --lorebook ~/lorebook --url http://localhost:8080 --language English=forms --language Finnish=stems
+```
+
+`--language` is repeatable; `stems` also asks for the beginnings of words that their endings attach to, for
+languages that inflect too much to list every form. The default is English, whole-word forms only.
+
+- **The forms go to Raven's folder**, `~/.config/raven/librarian/lorebook_expansion`, in Raven's format, where
+  grimoire's ports and Raven both read them.
+- **A run asks only the terms without forms yet**, so an interrupted run is resumed by running it again, and
+  after editing the lorebook, a run asks only the edited terms.
+- **The forms belong to one model**: a run with another model asks every term again, into a file of its own.
+
 ## Plans
 
 [`briefs/ports-brief.md`](briefs/ports-brief.md) is the plan, and

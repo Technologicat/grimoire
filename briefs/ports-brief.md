@@ -48,8 +48,8 @@ TypeScript, so one translation of the core serves both.
 - **Python 3.11 is the floor**, the oldest version still supported (3.10 reached its end of life in October
   2026), and the core's own. The dev venv runs 3.14 (maintainer, 2026-11-23); CI covers 3.11 to 3.15.
 - **The JS dev environment is chosen for how well the agent works in it** (maintainer, 2026-11-23), not for
-  the fewest installs: an install costs little, and goes into `NEW-MACHINE-SETUP.md`. Chosen at step 4, when
-  it is first needed.
+  the fewest installs: an install costs little, and goes into `NEW-MACHINE-SETUP.md`. Chosen at step 5, the
+  TypeScript core, when it is first needed.
 - **The terms' inflected forms are read from Raven's ledgers**, where Raven runs on the same machine, and are
   never generated inside a hook. Generating them needs an LLM and takes minutes. The ledger format is
   Raven's [`sweep-ledger.md`](https://github.com/Technologicat/raven/blob/main/raven/librarian/sweep-ledger.md).

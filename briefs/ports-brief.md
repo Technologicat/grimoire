@@ -154,6 +154,11 @@ The porting guide's *Hosts* section has it in full. In short:
       `[openwebui]` settings and dotclaude's `open-webui-serve`. The mount is of the glossary's real location,
       since a symlink to a host path does not resolve inside the container.
     - **The filter is on globally, the tool enabled per model**, to begin with.
+    - **The mounts, the local AI server's setup and the live test are m97's work** (maintainer, 2026-11-24), done
+      in a session on that machine, where m97's live instance and private settings are: m97's
+      `briefs/openwebui-mounts-brief.md`. Two mounts for the lorebook, its folder and its symlinks' target, since
+      a folder of symlinks is how one lorebook draws on glossaries living elsewhere, and a container cannot
+      express that more compactly; and one for the inflected forms.
 - **pi**: an extension's `before_agent_start` can store a typed message in the session and send it to the model,
   the nearest thing to Raven's stored round; `pi.registerTool` offers the lookup. Recognizing its own messages
   on the branch is inferred, **to verify**.

@@ -107,9 +107,41 @@ The porting guide's *Hosts* section has it in full. In short:
       was given can exceed one hook output. *Limitation, to document*: definitions given before compaction
       are given again only as their terms come up again, so until then the model has only the summary.
     - **The budget counts characters**: 8,000 per prompt, under the hook output's cap, and 32,000 per session.
-- **Open WebUI**: Python. Its filters are recalled to be able to change a conversation before the model sees
-  it; **to verify**. A function is recalled to be one file pasted into the UI, which would mean inlining the
-  core into it by a build step; **to verify** as well.
+- **Open WebUI** (read 2026-11-24 in its docs, and in its source at 0.13.4 where the docs are silent; the local AI
+  server runs 0.13.3):
+  - **Documented:**
+    - A **Filter** function has four hooks. `inlet` runs once per user turn; `request`, new in 0.11.2, runs
+      before *every* call to the model, each hop of a tool loop included, and "any change you make must be safe
+      to apply to a body you have already changed". Both get `body["messages"]`, and "can modify it freely".
+    - What the model receives is more than `body["messages"]`: the model's system prompt, RAG sources and, in
+      native mode, memories and skills are added after `inlet`, and all system messages are merged into one.
+    - A filter knows its chat: `__chat_id__` and `__metadata__["chat_id"]`. There is no documented per-chat store,
+      and the `Filter` instance is cached and shared across requests.
+    - **A function is one Python file, stored in the database** and loaded with `exec()`: pasted in the admin
+      panel, imported from a URL (GitHub URLs converted to raw), or created through the admin API. Nothing loads
+      from the filesystem. A `requirements:` line in the frontmatter pip-installs packages at first load.
+    - Settings are pydantic **Valves** (admin) and **UserValves** (per user, from the chat's controls). A `str`
+      valve serves for a folder path.
+    - A **Tool** is a separate plugin kind, `class Tools`, every public method a tool. **Native function calling
+      is the default**; the prompt-based mode is "Legacy" and unsupported. A tool is enabled per chat, or by
+      default per model.
+    - A filter can add tool specifications to `body["tools"]`, but nothing executes them.
+    - The last breaking change to the plugin API was 0.9.0 (2026-04-20), the data layer turning async.
+  - **Read in the source, not documented:**
+    - **What a filter inserts is not stored**: the user's turn is stored before the filters run, and each turn's
+      messages are rebuilt from the database. So an inserted round exists for that request only, and the filter
+      will not see it on the next turn.
+    - Inserted assistant `tool_calls` and `tool` messages are passed to a Chat Completions backend unchanged; the
+      server's own check of tool pairs runs before the filters, so an inserted pair must be well-formed itself.
+    - Functions and Tools are separate tables with separate loaders, so a filter and a tool are **two installs**.
+      A model's call to a tool only a filter advertised gets "Tool not found".
+  - **Deployment, on the local AI server:** Open WebUI runs in a podman container whose only mount is its data
+    volume, started by two launchers, m97 and dotclaude's `open-webui-serve`. That machine has no lorebook folder
+    and no ledgers yet; on this machine the lorebook folder holds a symlink into `substrate-independent`, which a
+    container would not resolve unless the target is mounted too.
+  - **Needs a live test**: an inserted tool round before the user's message reaching the backend intact, and
+    gufo accepting it; the `request` hook seeing its own insertion on a later hop; the Tool reading a folder path
+    from its valve.
 - **pi**: an extension's `before_agent_start` can store a typed message in the session and send it to the model,
   the nearest thing to Raven's stored round; `pi.registerTool` offers the lookup. Recognizing its own messages
   on the branch is inferred, **to verify**.

@@ -158,11 +158,15 @@ The porting guide's *Hosts* section has it in full. In short:
       said "I don't have a lorebook entry for "aria-worthy" — nothing came back". The filter had inserted the
       "AI ethnography" round, still within its five messages, just before that request; the reading is that the
       model took that round for its own lookup of the term it was asked about. One trial each way, so the
-      cause is inferred, but the two chats differ only in that round and the exchange before it. *To decide*:
-      whether the round should say it was given rather than asked for, or sit elsewhere.
+      cause is inferred, but the two chats differ only in that round and the exchange before it.
+      - **Measured in Raven before any change** (maintainer, 2026-11-24): Raven stores the same round in the same
+        place, and chose that shape by measurement, so a fix belongs in Raven's porting guide and every port
+        together. Filed in Raven's `TODO_DEFERRED.md`, "Can the lorebook's definitions round keep the model from
+        looking a term up?". grimoire's shape stays as it is until then.
     - **Open WebUI's own prefix is large**: a fresh chat's first call to the model reused 8,444 cached tokens
-      from an earlier chat's, which presumably is the system prompt and tool specifications they share; so a
-      one-line question goes out as about 8,500 tokens before any definition.
+      from an earlier chat's, so a one-line question goes out as about 8,500 tokens before any definition. Likely
+      in part Open WebUI's memory, which the model has been writing to with its memory tools and which a new chat
+      appears to carry (the maintainer's reading, 2026-11-24).
     - **The `request` hook leaves its own round alone on later hops.** "What are AI ethnographies? And
       separately, use your lorebook to look up 'aria-worthy'" in a fresh chat: the definition arrived, judging
       by the answer, and the model called the tool, the turn taking four calls to gufo. From the first to the

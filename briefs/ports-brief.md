@@ -163,8 +163,13 @@ The porting guide's *Hosts* section has it in full. In short:
     - **Open WebUI's own prefix is large**: a fresh chat's first call to the model reused 8,444 cached tokens
       from an earlier chat's, which presumably is the system prompt and tool specifications they share; so a
       one-line question goes out as about 8,500 tokens before any definition.
-    - **Still to test**: the `request` hook leaving its own round alone on a later hop of a tool loop, which needs
-      a turn where the filter inserts a round and the model also calls a tool.
+    - **The `request` hook leaves its own round alone on later hops.** "What are AI ethnographies? And
+      separately, use your lorebook to look up 'aria-worthy'" in a fresh chat: the definition arrived, judging
+      by the answer, and the model called the tool, the turn taking four calls to gufo. From the first to the
+      second the body grew by 874 bytes, the model's call and its answer included, against the 1,232
+      characters a second copy of the inserted round would add; and each call reused all but the last 5 to 8
+      tokens of the previous call's prompt from gufo's prefix cache, past the point, just before the user's
+      message, where a second copy would have broken it.
   - **Decided** (maintainer, 2026-11-24):
     - **Stateless, as Raven scans**: on every call, the definitions for the terms in the new message and the four
       before it, within the budget, inserted as a `lorebook_lookup` tool round before the user's message. A

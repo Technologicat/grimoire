@@ -142,6 +142,18 @@ The porting guide's *Hosts* section has it in full. In short:
   - **Needs a live test**: an inserted tool round before the user's message reaching the backend intact, and
     gufo accepting it; the `request` hook seeing its own insertion on a later hop; the Tool reading a folder path
     from its valve.
+  - **Decided** (maintainer, 2026-11-24):
+    - **Stateless, as Raven scans**: on every call, the definitions for the terms in the new message and the four
+      before it, within the budget, inserted as a `lorebook_lookup` tool round before the user's message. A
+      record of what was given would be wrong here, since what was inserted is gone by the next turn.
+    - **In the `request` hook, made idempotent**, so that it reaches every call of a tool loop.
+    - **Two single files, generated**: a filter and a tool, each with the core and the ledger reader inlined
+      verbatim by a build script, committed, and checked in CI as the copies are. Chosen over pip-installing
+      grimoire through `requirements:`, which would need the network when the container starts.
+    - **The lorebook and the ledgers are mounted read-only into the container**, by both launchers: m97's
+      `[openwebui]` settings and dotclaude's `open-webui-serve`. The mount is of the glossary's real location,
+      since a symlink to a host path does not resolve inside the container.
+    - **The filter is on globally, the tool enabled per model**, to begin with.
 - **pi**: an extension's `before_agent_start` can store a typed message in the session and send it to the model,
   the nearest thing to Raven's stored round; `pi.registerTool` offers the lookup. Recognizing its own messages
   on the branch is inferred, **to verify**.
@@ -178,6 +190,13 @@ carries a generator of its own, which every port's users can run.
   and the porting guide, against a driver grimoire would write regardless at two to three times that, since
   Raven's own driver runs on `llmclient` and `sweep.Sweep`. The leverage did not pay for a refactor across two
   Raven modules and a second conformance file.
+
+## Project hygiene
+
+- **grimoire becomes a proper package** (maintainer, 2026-11-24). The wheel installs its modules top-level,
+  `lorebookcore`, `ledger` and `expand`, which is harmless in pipx's venv of its own and invites a collision in a
+  shared one. Kept apart from the Open WebUI port, which inlines its modules and does not depend on it. The
+  question to settle is how a package fits the ports' copies, which import each other side by side.
 
 ## Open questions
 

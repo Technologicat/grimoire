@@ -38,6 +38,7 @@ dev-mode-dirs = ["lib", "core"]         # an editable install puts these on the 
 dev = [
     # Test
     "pytest>=8.0",
+    "pydantic>=2",             # the Open WebUI port's settings; Open WebUI provides it there
     "pip",                     # ensures `python -m pip` works in the venv
 
     # Linters (for local checks — CI also installs them separately)
@@ -75,6 +76,7 @@ exclude = [
     "core",                    # Raven's, synced unedited; linted in Raven
     "claude-code/scripts/lorebookcore.py",   # the same, the plugin's copy
     "claude-code/scripts/ledger.py",         # a copy of lib/ledger.py, which is linted
+    "open-webui/grimoire_*.py",              # generated from linted sources by scripts/build_open_webui.py
 ]
 
 [tool.ruff.lint]

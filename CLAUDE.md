@@ -31,6 +31,13 @@ Edit the one in `lib/`, then run `python scripts/sync_core.py`; `--check` fails 
 its source. Tests for `lib/` are in `lib/tests/`, and import the modules side by side with the core, as a
 port's copies sit.
 
+## The Open WebUI plugins are generated
+
+**`open-webui/grimoire_filter.py` and `grimoire_tool.py` are built, never edited**: Open WebUI keeps each plugin as
+one file, so `python scripts/build_open_webui.py` inlines the core, `lib/ledger.py` and the port's sources in
+`open-webui/src/` into each. Edit the sources, build, and commit the result; a test fails on a generated file
+that is not current. The build stops on a top-level name defined in two of the inlined modules.
+
 ## Status
 
 Steps 1 to 3 of the brief are built: the sync script, the synced core, and CI running the conformance cases

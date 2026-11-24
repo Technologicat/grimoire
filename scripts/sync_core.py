@@ -30,6 +30,7 @@ FILES = {
                                         CLAUDE_CODE / "lorebookcore.py"],
     "raven/librarian/tests/lorebook_conformance.json": [CORE / "tests" / "lorebook_conformance.json"],
     "raven/librarian/tests/test_lorebookcore.py": [CORE / "tests" / "test_lorebookcore.py"],
+    "raven/librarian/prompts/lorebook_expansion.md": [CORE / "prompts" / "lorebook_expansion.md"],
 }
 
 # grimoire's own modules shared between ports → the copies inside the ports that need one.

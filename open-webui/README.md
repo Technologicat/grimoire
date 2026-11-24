@@ -13,13 +13,22 @@ Needs Open WebUI 0.11.2 or later, and native function calling, which is Open Web
 
 ## Install
 
-**The filter**: Admin Panel → Functions → Import from URL,
-`https://github.com/Technologicat/grimoire/blob/main/open-webui/grimoire_filter.py`. Enable it, make it global,
-and set its valves.
+Both are installed by an admin. Like every Open WebUI plugin, they run as code on the server, so read them first:
+each is plain Python, its parts inlined verbatim and marked with the file they came from.
 
-**The tool**: Workspace → Tools → Import from URL,
-`https://github.com/Technologicat/grimoire/blob/main/open-webui/grimoire_tool.py`. Set its valves, and enable it
-for the models that should have it, under Workspace → Models → Tools.
+1. **The lorebook on the server.** Open WebUI reads the lorebook from the server's own filesystem. In a container,
+   mount the folders into it first; see [In a container](#in-a-container).
+2. **The filter**: Admin Panel → Functions → **Import from URL**, and give it
+   `https://github.com/Technologicat/grimoire/blob/main/open-webui/grimoire_filter.py`. Save it, then switch it
+   on with its **Active** toggle, make it apply to every model with its **Global** toggle, and set its valves
+   (the gear icon).
+3. **The tool**: Workspace → Tools → **Import from URL**, and give it
+   `https://github.com/Technologicat/grimoire/blob/main/open-webui/grimoire_tool.py`. Save it, and set its valves.
+   - **Give the users access to it**, from its **⋯** menu → **Access**: a tool a user cannot access is skipped
+     for them without a word.
+   - **Enable it for the models** that should have it, under Workspace → Models → (the model) → Tools.
+4. **Check it works**: in a new chat with one of those models, mention a term from your lorebook, and ask about
+   it. To exercise the tool, ask the model to look up a term in the lorebook that your message does not mention.
 
 The valves, the same in both:
 
@@ -31,9 +40,30 @@ The valves, the same in both:
 
 And in the filter only, **`budget`**, the most characters of definitions given with one message, 8,000 by default.
 
-**In a container**, the folders must be mounted into it, read-only will do, and the valves set to where they are
-mounted: `-v ~/lorebook:/lorebook:ro` and `lorebook_dir` = `/lorebook`. A lorebook folder holding symlinks needs
-their targets mounted as well, at the same paths, since a link to a host path does not resolve otherwise.
+**For terms to match however they are inflected**, generate their inflected forms once, with Raven or with
+grimoire's `grimoire-expand` ([grimoire's README](../README.md#inflected-forms)), and point `ledger_dir` at them.
+
+### In a container
+
+The folders must be mounted into the container, read-only will do, and the valves set to where they are mounted:
+`-v ~/lorebook:/lorebook:ro`, and `lorebook_dir` = `/lorebook`. Three things to know:
+
+- **A lorebook folder holding symlinks needs their targets mounted as well**, at the same paths, since a link to a
+  host path resolves to nothing inside the container otherwise. A folder of links to glossaries living elsewhere
+  is a natural way to keep a lorebook, and is why one lorebook can take two mounts.
+- **The inflected forms are a mount of their own**, `-v ~/.config/raven/librarian/lorebook_expansion:/lorebook_expansion:ro`,
+  with `ledger_dir` = `/lorebook_expansion`.
+- **A mount takes effect when the container is started**, so a running one needs restarting.
+
+[m97](https://github.com/Technologicat/m97), a dashboard and control panel for a gufo server, which starts Open
+WebUI too, takes the mounts as a setting, `[openwebui] mounts`.
+
+### Updating and removing
+
+- **Update** by opening the plugin in its editor, replacing its code with the current file's, and saving. Open
+  WebUI keeps the earlier code in the plugin's version history, and keeps its valves, checking them against the
+  new code.
+- **Remove** from the same list, Admin Panel → Functions or Workspace → Tools.
 
 ## What it does
 

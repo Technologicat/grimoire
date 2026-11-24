@@ -6,9 +6,14 @@ folder of Markdown files, each entry a section whose header is the term. The sam
 
 ## Install
 
+In Claude Code:
+
 ```
-/plugin install grimoire --marketplace Technologicat/grimoire
+/plugin marketplace add Technologicat/grimoire
+/plugin install grimoire@grimoire
 ```
+
+On Claude Code 2.1.275 or later, one line does both: `/plugin install grimoire --marketplace Technologicat/grimoire`.
 
 Claude Code asks for the settings when the plugin is enabled:
 
@@ -20,6 +25,21 @@ Claude Code asks for the settings when the plugin is enabled:
 
 The hooks and the lookup tool's server run `python3`, which has to be Python 3.11 or later. Nothing else is
 installed.
+
+**For terms to match however they are inflected**, generate their inflected forms once, with Raven or with
+grimoire's `grimoire-expand` ([grimoire's README](../README.md#inflected-forms)). The plugin works without them,
+matching each term only as written.
+
+**To check it works**, start a new session and mention a term from your lorebook: its definition reaches Claude
+with your message.
+
+### Updating and removing
+
+- **Update** with `/plugin update grimoire@grimoire`, or from the plugin manager, `/plugin`. Automatic updates are
+  off by default for marketplaces other than Anthropic's.
+- **Change the settings** from the plugin manager, `/plugin`, under grimoire.
+- **Remove** with `/plugin uninstall grimoire@grimoire`. This also deletes the plugin's data folder, which holds
+  only the record of what each session was given.
 
 ## What it does
 

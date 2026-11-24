@@ -7,15 +7,24 @@ coinages, a field's jargon, the special sense you give an ordinary word. The def
 Markdown files, each entry a section whose header is the term. Raven-librarian reads such a folder; grimoire
 lets Claude Code, Open WebUI, pi and LM Studio read the same one.
 
-**Status: early.** The Claude Code plugin works; the other ports are still to come.
+**Status: early.** The Claude Code and Open WebUI ports work; pi and LM Studio are still to come.
 
 ## Claude Code
 
+A plugin. In Claude Code:
+
 ```
-/plugin install grimoire --marketplace Technologicat/grimoire
+/plugin marketplace add Technologicat/grimoire
+/plugin install grimoire@grimoire
 ```
 
-What it does, its settings and its limitations: [`claude-code/README.md`](claude-code/README.md).
+Its settings, updating, what it does and its limitations: [`claude-code/README.md`](claude-code/README.md).
+
+## Open WebUI
+
+A filter function, which gives the definitions, and a tool, which lets the model look a term up, each imported
+from its URL by an admin. Installing them, their settings, a lorebook in a container, and what they do:
+[`open-webui/README.md`](open-webui/README.md).
 
 ## Inflected forms
 

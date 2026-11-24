@@ -135,13 +135,36 @@ The porting guide's *Hosts* section has it in full. In short:
       server's own check of tool pairs runs before the filters, so an inserted pair must be well-formed itself.
     - Functions and Tools are separate tables with separate loaders, so a filter and a tool are **two installs**.
       A model's call to a tool only a filter advertised gets "Tool not found".
-  - **Deployment, on the local AI server:** Open WebUI runs in a podman container whose only mount is its data
-    volume, started by two launchers, m97 and dotclaude's `open-webui-serve`. That machine has no lorebook folder
-    and no ledgers yet; on this machine the lorebook folder holds a symlink into `substrate-independent`, which a
-    container would not resolve unless the target is mounted too.
-  - **Needs a live test**: an inserted tool round before the user's message reaching the backend intact, and
-    gufo accepting it; the `request` hook seeing its own insertion on a later hop; the Tool reading a folder path
-    from its valve.
+  - **Deployment, on the local AI server** (2026-11-24): Open WebUI runs in a podman container, started by two
+    launchers, m97 and dotclaude's `open-webui-serve`, which both mount the host folders listed in m97's
+    `[openwebui] mounts` read-only. Three mounts: the lorebook folder at `/lorebook`, holding a symlink to the
+    glossary; `substrate-independent` at its host path, so that the symlink resolves; and the ledgers at
+    `/lorebook_expansion`, a copy of the work machine's `expansions-01308c24`. Valves: `lorebook_dir` =
+    `/lorebook`, `ledger_dir` = `/lorebook_expansion`, `stem_languages` = `Finnish`. The filter is global, the
+    tool attached to `flash-next` and readable by all users, as the model is.
+  - **Observed in a live test** (2026-11-24, Open WebUI 0.13.3, gufo serving `flash-next`; the requests read in
+    gufo's log, the filter's insertions reproduced by running `grimoire_filter.py` outside Open WebUI on the same
+    messages, lorebook and ledger):
+    - **An inserted round reaches gufo and is used.** "What are AI ethnographies, and why would they matter?" got
+      the entry "AI ethnography" (1,232 characters) inserted, gufo answered 200, and the answer paraphrased the
+      definition ("reading AI interaction logs as field notes rather than debug output").
+      - **"ethnographies" matched through the ledger**, the entry being "AI ethnography"; so `ledger_dir` is read.
+    - **The tool reads its folder from its valve, and its lookup finds a partial title.** In a fresh chat,
+      "Use your lorebook to look up 'aria-worthy'" inserted nothing, since "aria-worthy" is not a whole title;
+      the model called `lorebook_lookup`, gufo's log showing the second round, and the answer opened "There's no
+      literal entry for aria-worthy; the entry is titled "Aria-worthy design"".
+    - **An inserted round can stop the model from calling the tool.** The same request, sent in the chat that
+      had just discussed AI ethnographies, went to gufo as one call, finished with no tool call, and the model
+      said "I don't have a lorebook entry for "aria-worthy" — nothing came back". The filter had inserted the
+      "AI ethnography" round, still within its five messages, just before that request; the reading is that the
+      model took that round for its own lookup of the term it was asked about. One trial each way, so the
+      cause is inferred, but the two chats differ only in that round and the exchange before it. *To decide*:
+      whether the round should say it was given rather than asked for, or sit elsewhere.
+    - **Open WebUI's own prefix is large**: a fresh chat's first call to the model reused 8,444 cached tokens
+      from an earlier chat's, which presumably is the system prompt and tool specifications they share; so a
+      one-line question goes out as about 8,500 tokens before any definition.
+    - **Still to test**: the `request` hook leaving its own round alone on a later hop of a tool loop, which needs
+      a turn where the filter inserts a round and the model also calls a tool.
   - **Decided** (maintainer, 2026-11-24):
     - **Stateless, as Raven scans**: on every call, the definitions for the terms in the new message and the four
       before it, within the budget, inserted as a `lorebook_lookup` tool round before the user's message. A

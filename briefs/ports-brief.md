@@ -296,14 +296,15 @@ The porting guide's *Hosts* section has it in full. In short:
     - **Installed locally, with `lms dev --install`, for now**; publishing to LM Studio's Hub later.
     - **Tests:** unit tests of the rewriting and of the given-already check, with a hand-made fake controller and the
       SDK's own `Chat` classes.
-  - **To decide before building:** whether the Claude Code port should also give an edited definition again, with
-    the same note: its record is by entry id, so today it does not.
+  - **The Claude Code port follows** (maintainer, 2026-11-26): it gives an edited definition again too, with the same
+    note. Its record is by entry id today, so it has to record what each given entry said, or compare against it.
   - **Needs a live test, in the app:** whether the chat shows the rewritten message or the original; whether a
     regenerated answer runs the preprocessor again; the tool; whether a local model reads definitions placed in the
     user's message, in front of the question.
 - **The budgets, across the ports** (maintainer, 2026-11-26): **8,000 characters per message and 64,000 per
   conversation** as the defaults, where a port has a per-conversation cap (Claude Code, LM Studio); the stateless
-  ports (Open WebUI, pi) have only the first. Claude Code's per-session cap is 32,000 today: to raise.
+  ports (Open WebUI, pi) have only the first. Claude Code's per-session cap is 32,000 today: to raise to 64,000
+  (confirmed by the maintainer, 2026-11-26), its README and its session-budget test with it.
 - **Four frontends show the landscape better than one** (Juha, 2026-11-26): the same lorebook takes four shapes,
   stateless where the host rebuilds the conversation (Open WebUI, pi), given once where what is injected persists
   (Claude Code, LM Studio), a tool round where the host allows one, the user's message where it does not.

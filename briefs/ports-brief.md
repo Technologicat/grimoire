@@ -264,7 +264,49 @@ The porting guide's *Hosts* section has it in full. In short:
     - **Installed in pi on all three machines** (the work machine, the personal machine and the local AI server),
       each with the lorebook folder in Raven's place and a copy of the work machine's `expansions-01308c24` ledger;
       the same question got the glossary's meaning on each.
-- **LM Studio**: the preprocessor can only prepend to the user's message, so the port marks what it injects.
+- **LM Studio** (read 2026-11-26 in its docs, the SDK `lmstudio-ai/lmstudio-js` at 2.1.0, the CLI `lmstudio-ai/lms`,
+  and the plugins installed on the work machine; the work machine runs LM Studio 0.4.19, the current release being
+  0.4.29):
+  - **Documented:**
+    - A plugin is `manifest.json` (`type: "plugin"`, `runner: "node"`, `owner`, `name`), `package.json` with an npm
+      lockfile, and `src/index.ts` exporting `main(context)`, which registers a prompt preprocessor, a tools
+      provider and configuration. Node built-ins are allowed; a node plugin is not sandboxed. **Plugins are in
+      private beta**, the SDK's API marked as liable to change without warning.
+    - **The preprocessor gets only the current user message, and returns one message to replace it**: it cannot
+      add messages, so no tool round. **What it returns is saved in the chat history.** It can read the earlier
+      history with `ctl.pullHistory()`.
+    - A tool is declared with `tool()` and zod schemas, or with `rawFunctionTool()` and a JSON Schema (marked
+      experimental). One plugin may be both a preprocessor and a tools provider.
+    - Settings are per-chat or global config schematics; fields are strings, numbers, booleans, string arrays and
+      selects, with no path type.
+    - Installed from the Hub (`lms push`, `lms get`), or locally with `lms dev --install`; developed with `lms dev`.
+  - **Read in the source, not documented:** LM Studio bundles a plugin itself, with esbuild, into CommonJS, on the
+    machine it is installed on and from the plugin's folder alone, so an import from outside the folder breaks on
+    install (`import.meta` and top-level await are also unavailable). The core goes into the plugin as a copy.
+  - **Decided** (maintainer, 2026-11-26):
+    - **The definitions go into the user's message, before its text, between markers, once per chat**, read back
+      from the history: an entry counts as given if its text is already there between the markers, so a definition
+      edited since is given again, **with a note saying it changed on disk**, so that the model knows why a term's
+      definition appears a second time. The marked blocks are left out of the scan.
+    - **The lookup tool through `rawFunctionTool`**, with the core's own schema. Its being experimental matters
+      little: frontends are still moving fast, and `raven-mcp` is there as a fallback for the lookup.
+    - **Settings:** global ones for the folders, the stem languages and the budget, defaulting to Raven's folders;
+      a per-chat switch to turn it on and off.
+    - **The TypeScript core is copied into `lmstudio/src/core/` by the sync script**, and held by `--check`.
+    - **Installed locally, with `lms dev --install`, for now**; publishing to LM Studio's Hub later.
+    - **Tests:** unit tests of the rewriting and of the given-already check, with a hand-made fake controller and the
+      SDK's own `Chat` classes.
+  - **To decide before building:** whether the Claude Code port should also give an edited definition again, with
+    the same note: its record is by entry id, so today it does not.
+  - **Needs a live test, in the app:** whether the chat shows the rewritten message or the original; whether a
+    regenerated answer runs the preprocessor again; the tool; whether a local model reads definitions placed in the
+    user's message, in front of the question.
+- **The budgets, across the ports** (maintainer, 2026-11-26): **8,000 characters per message and 64,000 per
+  conversation** as the defaults, where a port has a per-conversation cap (Claude Code, LM Studio); the stateless
+  ports (Open WebUI, pi) have only the first. Claude Code's per-session cap is 32,000 today: to raise.
+- **Four frontends show the landscape better than one** (Juha, 2026-11-26): the same lorebook takes four shapes,
+  stateless where the host rebuilds the conversation (Open WebUI, pi), given once where what is injected persists
+  (Claude Code, LM Studio), a tool round where the host allows one, the user's message where it does not.
 
 ## Order of work
 

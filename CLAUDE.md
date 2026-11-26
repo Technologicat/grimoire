@@ -21,7 +21,9 @@ made in Raven, under `raven/librarian/`, and then synced with `python scripts/sy
 Raven commit in `core/RAVEN_COMMIT`. An edit made here would be lost at the next sync, and CI fails on it:
 `scripts/sync_core.py --check` compares the copies against Raven at the recorded commit.
 
-The TypeScript translation is grimoire's own, and is checked against the same conformance cases.
+The TypeScript translation is grimoire's own, and is checked against the same conformance cases. One part of it is
+generated: its table of math symbols, `MATH_SYMBOLS` in `ts/core/src/lorebookcore.ts`, which the sync script
+regenerates from the Python core's `_MATH_SYMBOLS`, and `--check` holds to it.
 
 ## Shared modules are edited in `lib/`
 

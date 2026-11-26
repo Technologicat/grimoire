@@ -7,12 +7,15 @@
 
 The files are read out of Raven's git history, never its working tree, and the commit they came from is
 recorded in `core/RAVEN_COMMIT`. grimoire's own modules shared between ports, in `lib/`, are copied from the
-working tree. `--check` exits 1 if any copy differs from its source, which is how CI holds the copies to being
-copies.
+working tree. The TypeScript core's table of math symbols is regenerated from the synced Python core's. `--check`
+exits 1 if any copy differs from its source, or the table from the Python one, which is how CI holds the copies
+to being copies.
 """
 
 import argparse
+import importlib.util
 import pathlib
+import re
 import subprocess
 import sys
 
@@ -21,6 +24,7 @@ CORE = REPO / "core"
 RECORD = CORE / "RAVEN_COMMIT"
 LIB = REPO / "lib"
 CLAUDE_CODE = REPO / "claude-code" / "scripts"
+TS_CORE = REPO / "ts" / "core" / "src" / "lorebookcore.ts"
 
 # Raven's path → the copies in grimoire. The runner imports the core as `from .. import lorebookcore`, so the
 # layout under `core/` mirrors Raven's under `raven/librarian/`. A port that is installed by copying its own
@@ -57,6 +61,44 @@ def read(raven: pathlib.Path, commit: str, path: str) -> bytes:
     return git(raven, "show", f"{commit}:{path}")
 
 
+_TS_TABLE = re.compile(r"export const MATH_SYMBOLS =\n.*?;\n", re.S)
+_BACKSLASH = "\\"
+
+
+def ts_math_symbols() -> str:
+    """The TypeScript core's `MATH_SYMBOLS` declaration, made from the Python core's `_MATH_SYMBOLS`: the same code
+    point ranges, as `\\u{...}` escapes for a `u`-flag class, in lines of a hundred columns or so."""
+    spec = importlib.util.spec_from_file_location("synced_lorebookcore", CORE / "lorebookcore.py")
+    core = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(core)
+    chars, ranges, i = core._MATH_SYMBOLS, [], 0
+    while i < len(chars):
+        if i + 2 < len(chars) and chars[i + 1] == "-":
+            ranges.append((ord(chars[i]), ord(chars[i + 2])))
+            i += 3
+        else:
+            ranges.append((ord(chars[i]), ord(chars[i])))
+            i += 1
+
+    def escape(c: int) -> str:
+        return f"{_BACKSLASH}u{{{c:x}}}"
+    parts = [escape(a) if a == b else f"{escape(a)}-{escape(b)}" for a, b in ranges]
+    lines, line = [], ""
+    for part in parts:
+        if len(line) + len(part) > 100:
+            lines.append(line)
+            line = ""
+        line += part
+    lines.append(line)
+    return "export const MATH_SYMBOLS =\n" + " +\n".join(f"  String.raw`{line}`" for line in lines) + ";\n"
+
+def _ts_with_table(text: str) -> str:
+    new, count = _TS_TABLE.subn(lambda _: ts_math_symbols(), text)
+    if count != 1:
+        sys.exit(f"{TS_CORE.relative_to(REPO)}: no `export const MATH_SYMBOLS = ...;` to regenerate")
+    return new
+
+
 def sync(raven: pathlib.Path, *, ref: str, fetch: bool) -> None:
     if fetch:
         git(raven, "fetch", "--quiet", "origin")
@@ -66,6 +108,10 @@ def sync(raven: pathlib.Path, *, ref: str, fetch: bool) -> None:
     RECORD.write_text(commit + "\n", encoding="utf-8")
     for source, targets in LOCAL_FILES.items():
         _write(source.read_bytes(), targets)
+    before = TS_CORE.read_text(encoding="utf-8")
+    after = _ts_with_table(before)
+    TS_CORE.write_text(after, encoding="utf-8")
+    print(f"{'unchanged' if after == before else 'updated':>9}  {TS_CORE.relative_to(REPO)} (its math symbol table)")
     print(f"Synced from Raven {commit} ({ref}), and from lib/.")
 
 def _write(content: bytes, targets: list[pathlib.Path]) -> None:
@@ -85,6 +131,12 @@ def check(raven: pathlib.Path) -> bool:
         ok &= _compare(read(raven, commit, source), targets, f"{source} at {commit}")
     for source, targets in LOCAL_FILES.items():
         ok &= _compare(source.read_bytes(), targets, str(source.relative_to(REPO)))
+    current = TS_CORE.read_text(encoding="utf-8")
+    if _ts_with_table(current) == current:
+        print(f"       ok  {TS_CORE.relative_to(REPO)} (its math symbol table)")
+    else:
+        print(f"    stale  {TS_CORE.relative_to(REPO)}: its math symbol table differs from the Python core's")
+        ok = False
     print(f"{'Matches' if ok else 'Does not match'} Raven {commit}, and lib/.")
     return ok
 

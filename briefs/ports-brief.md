@@ -256,7 +256,13 @@ The porting guide's *Hosts* section has it in full. In short:
     - **An inflected form fires through the ledger**: "What are prequisites?" got the same meaning. One earlier
       run of it answered something unrelated, about an unsaved buffer, and did not reproduce; the definition was
       given, as the same text fires offline.
+      - **Likely pi's own**, in Juha's experience of it (2026-11-26): Qwen3.8 Flash Next has said now and then,
+        between its rounds, that the user sent only system instructions, and Qwen3.8 27B hallucinated user inputs,
+        only in pi. His reading is that pi injects prompts that its TUI does not show.
     - **The model calls the tool**, and on a near miss's answer looks the named entry up as well.
+    - **Installed in pi on all three machines** (the work machine, the personal machine and the local AI server),
+      each with the lorebook folder in Raven's place and a copy of the work machine's `expansions-01308c24` ledger;
+      the same question got the glossary's meaning on each.
 - **LM Studio**: the preprocessor can only prepend to the user's message, so the port marks what it injects.
 
 ## Order of work

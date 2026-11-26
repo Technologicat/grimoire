@@ -91,7 +91,8 @@ def build(kind: str, port: pathlib.Path, description: str) -> str:
     inlined: set[str] = set()
     for name, path in parts:
         source = _without_inlined_imports(path.read_text(encoding="utf-8"), inlined)
-        out.append(f"\n\n# {'=' * 100}\n# {path.relative_to(REPO)}\n# {'=' * 100}\n\n{source}")
+        # As a POSIX path, so that the file comes out the same on every OS.
+        out.append(f"\n\n# {'=' * 100}\n# {path.relative_to(REPO).as_posix()}\n# {'=' * 100}\n\n{source}")
         if name in MODULES:
             out.append(f"\n{name} = _grimoire_types.SimpleNamespace(**{{_name: _value for _name, _value in "
                        f"globals().items() if not _name.startswith('__')}})\n")

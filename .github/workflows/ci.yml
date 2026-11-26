@@ -65,6 +65,23 @@ jobs:
     - name: Run tests
       run: pdm run pytest -v
 
+  typescript:
+    # The TypeScript core, type-checked and held to the same conformance cases as the Python one. Node from the
+    # floor, 22.12 (vitest's), to the newest.
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["22", "24", "26"]
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm ci
+    - run: npm run typecheck
+    - run: npm test
+
   core-unedited:
     # The files under core/ are Raven's. This fetches Raven at the commit they were synced from and
     # compares them byte for byte, so an edit made here fails CI instead of being lost at the next sync.

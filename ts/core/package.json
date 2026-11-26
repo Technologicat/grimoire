@@ -1,0 +1,9 @@
+{
+  "name": "@grimoire/lorebookcore",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The lorebook's core, translated from Raven's lorebookcore.py and held to its conformance cases.",
+  "license": "BSD-2-Clause",
+  "type": "module",
+  "exports": { ".": "./src/lorebookcore.ts" }
+}

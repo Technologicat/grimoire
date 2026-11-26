@@ -1,0 +1,22 @@
+{
+  "name": "grimoire",
+  "private": true,
+  "description": "grimoire's TypeScript: the lorebook's core, translated from Raven's, and the ports that use it.",
+  "license": "BSD-2-Clause",
+  "type": "module",
+  "workspaces": [
+    "ts/core"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p ts/core",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.11",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.2"
+  }
+}

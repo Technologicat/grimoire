@@ -63,6 +63,17 @@ TypeScript, so one translation of the core serves both.
       for the reader coming from the Python core. `isalpha()` is `\p{L}`.
     - Strings are sorted by code point, as Python sorts them, with a comparator of our own: JavaScript sorts by
       UTF-16 unit, which disagrees past the Basic Multilingual Plane.
+  - **The conformance cases had nothing beyond ASCII, so an ASCII `\w` passed them all.** Fixed in Raven, in the spec
+    rather than in grimoire's tests (maintainer, 2026-11-26), along with two bugs the cases turned up in Raven's core:
+    - **Unicode cases**: 積ん読 (tsundoku), ℵ₀ backlog, 𝔹𝔹ℚ, 𝔼-step, λ-lifting, a non-breaking space, Finnish
+      letters in an expansion, files in code point order.
+    - **Math symbols beyond ASCII are word characters**, from a table written out in the core, so that `∇-descent`
+      no longer fires on every "descent". Only those beyond ASCII, and the limits documented in the porting guide;
+      `slugify` unchanged, since it follows GitHub's anchors.
+    - **A byte order mark no longer hides a file's first header.**
+    - **A term in running Japanese or Chinese text does not fire**, the text having no spaces between words: filed
+      in Raven's `TODO_DEFERRED.md`.
+    - Python's incidental whitespace, `\x85` and the like, is left out of the spec.
 - **The terms' inflected forms are read from Raven's ledgers**, where Raven runs on the same machine, and are
   never generated inside a hook. Generating them needs an LLM and takes minutes. The ledger format is
   Raven's [`sweep-ledger.md`](https://github.com/Technologicat/raven/blob/main/raven/librarian/sweep-ledger.md).

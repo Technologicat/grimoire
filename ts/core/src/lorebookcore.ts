@@ -218,8 +218,8 @@ export const MATH_SYMBOLS =
   String.raw`\u{23dc}-\u{23e1}\u{25b7}\u{25c1}\u{25f8}-\u{25ff}\u{266f}\u{27c0}-\u{27c4}\u{27c7}-\u{27e5}` +
   String.raw`\u{27f0}-\u{27ff}\u{2900}-\u{2982}\u{2999}-\u{29d7}\u{29dc}-\u{29fb}\u{29fe}-\u{2aff}` +
   String.raw`\u{2b30}-\u{2b44}\u{2b47}-\u{2b4c}\u{fb29}\u{fe62}\u{fe64}-\u{fe66}\u{ff0b}\u{ff1c}-\u{ff1e}\u{ff5c}` +
-  String.raw`\u{ff5e}\u{ffe2}\u{ffe9}-\u{ffec}\u{10d8e}-\u{10d8f}\u{1d6c1}\u{1d6db}\u{1d6fb}\u{1d715}\u{1d735}` +
-  String.raw`\u{1d74f}\u{1d76f}\u{1d789}\u{1d7a9}\u{1d7c3}\u{1eef0}-\u{1eef1}`;
+  String.raw`\u{ff5e}\u{ffe2}\u{ffe9}-\u{ffec}\u{10d8e}-\u{10d8f}\u{1cef0}\u{1d6c1}\u{1d6db}\u{1d6fb}\u{1d715}` +
+  String.raw`\u{1d735}\u{1d74f}\u{1d76f}\u{1d789}\u{1d7a9}\u{1d7c3}\u{1eef0}-\u{1eef1}\u{1f8d0}-\u{1f8d8}`;
 const WORD_CHAR = `[${W_CHARS}${MATH_SYMBOLS}]`;
 
 // A word: letters, digits and math symbols, joined by internal hyphens or apostrophes (`co-pter`, `Chekhov's`),

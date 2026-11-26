@@ -42,8 +42,8 @@ that is not current. The build stops on a top-level name defined in two of the i
 
 ## Status
 
-Steps 1 to 4 of the brief are built: the sync script, the synced core, and CI running the conformance cases
-and checking the copies; the Claude Code plugin, tested live from GitHub; the ledger generator,
-`grimoire-expand`, installed with pipx; and the Open WebUI filter and tool, tested live on the local AI server.
-Next is step 5, the TypeScript core, starting with the choice of its dev environment; the order of work is in
-the brief.
+Steps 1 to 5 of the brief are built, and pi from step 6: the sync script, the synced core, and CI running the
+conformance cases and checking the copies; the Claude Code plugin, tested live from GitHub; the ledger generator,
+`grimoire-expand`, installed with pipx; the Open WebUI filter and tool, tested live on the local AI server; the
+TypeScript core and ledger reader, held to the same conformance cases; and the pi extension, tested live. Next is
+LM Studio; the order of work is in the brief.

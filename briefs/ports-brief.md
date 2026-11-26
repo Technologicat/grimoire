@@ -244,8 +244,19 @@ The porting guide's *Hosts* section has it in full. In short:
     - **A footer status and a `/lorebook` command**, since nothing the `context` event inserts is shown.
     - **Tests**: unit tests of the insertion, and one end-to-end test through pi's SDK with a scripted model,
       checking that the tool round survives pi's own conversion.
-  - **Needs a live test:** the tool round reaching gufo intact; installing from a subdirectory of grimoire's
-    repository through a manifest in its root `package.json`.
+  - **Found in testing** (2026-11-26):
+    - **The scripted model gets the messages before a provider's own conversion**, so a session test against it
+      cannot see that conversion; a round marked `aborted` passed it. A second test runs a session against a fake
+      OpenAI-compatible server, the wire gufo and LM Studio are reached by, and fails on that round, pi dropping it.
+  - **Observed live** (2026-11-26, pi 1.6.1, gufo serving `flash-next`):
+    - **`pi install git:github.com/Technologicat/grimoire` works**, the extension found through the root
+      `package.json`'s manifest; its `npm install` adds no dev dependencies.
+    - **The definitions reach the model and are used.** "What is a prequisite?" got the glossary's meaning,
+      against "you almost certainly mean prerequisite" with the lorebook pointed at an empty folder.
+    - **An inflected form fires through the ledger**: "What are prequisites?" got the same meaning. One earlier
+      run of it answered something unrelated, about an unsaved buffer, and did not reproduce; the definition was
+      given, as the same text fires offline.
+    - **The model calls the tool**, and on a near miss's answer looks the named entry up as well.
 - **LM Studio**: the preprocessor can only prepend to the user's message, so the port marks what it injects.
 
 ## Order of work

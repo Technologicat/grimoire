@@ -66,8 +66,8 @@ jobs:
       run: pdm run pytest -v
 
   typescript:
-    # The TypeScript core, type-checked and held to the same conformance cases as the Python one. Node from the
-    # floor, 22.12 (vitest's), to the newest.
+    # The TypeScript core, type-checked and held to the same conformance cases as the Python one, and the pi
+    # extension's tests. Node from the floor, 22.19 (pi's), to the newest.
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

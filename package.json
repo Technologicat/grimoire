@@ -3,18 +3,29 @@
   "private": true,
   "description": "grimoire's TypeScript: the lorebook's core, translated from Raven's, and the ports that use it.",
   "license": "BSD-2-Clause",
+  "keywords": [
+    "pi-package",
+    "lorebook",
+    "glossary"
+  ],
   "type": "module",
   "workspaces": [
     "ts/core"
   ],
   "engines": {
-    "node": ">=22.12"
+    "node": ">=22.19"
+  },
+  "pi": {
+    "extensions": [
+      "./pi/index.ts"
+    ]
   },
   "scripts": {
-    "typecheck": "tsc --noEmit -p ts/core",
+    "typecheck": "tsc --noEmit -p ts/core && tsc --noEmit -p pi",
     "test": "vitest run"
   },
   "devDependencies": {
+    "@earendil-works/pi-coding-agent": "^1.6.1",
     "@types/node": "^26.6.11",
     "typescript": "^7.0.2",
     "vitest": "^5.1.2"

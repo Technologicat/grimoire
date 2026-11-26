@@ -258,7 +258,8 @@ The porting guide's *Hosts* section has it in full. In short:
       given, as the same text fires offline.
       - **Likely pi's own**, in Juha's experience of it (2026-11-26): Qwen3.8 Flash Next has said now and then,
         between its rounds, that the user sent only system instructions, and Qwen3.8 27B hallucinated user inputs,
-        only in pi. His reading is that pi injects prompts that its TUI does not show.
+        only in pi. His reading is that pi injects prompts that its TUI does not show. Checkable by reading pi's
+        source for what it adds to a request (`earendil-works/pi`, `packages/coding-agent`); not yet done.
     - **The model calls the tool**, and on a near miss's answer looks the named entry up as well.
     - **Installed in pi on all three machines** (the work machine, the personal machine and the local AI server),
       each with the lorebook folder in Raven's place and a copy of the work machine's `expansions-01308c24` ledger;

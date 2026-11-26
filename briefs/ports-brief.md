@@ -215,9 +215,37 @@ The porting guide's *Hosts* section has it in full. In short:
       `briefs/done/openwebui-mounts-brief.md`. Two mounts for the lorebook, its folder and its symlinks' target, since
       a folder of symlinks is how one lorebook draws on glossaries living elsewhere, and a container cannot
       express that more compactly; and one for the inflected forms.
-- **pi**: an extension's `before_agent_start` can store a typed message in the session and send it to the model,
-  the nearest thing to Raven's stored round; `pi.registerTool` offers the lookup. Recognizing its own messages
-  on the branch is inferred, **to verify**.
+- **pi** (read 2026-11-26 in its docs and source, `earendil-works/pi` at 1.6.1, the package
+  `@earendil-works/pi-coding-agent`):
+  - **Documented:**
+    - An extension is a TypeScript module exporting a factory that takes `pi`, loaded by jiti with no build step;
+      relative `.ts` imports and Node built-ins work. Global extensions live in `~/.pi/agent/extensions/`, and a
+      package is installed with `pi install git:github.com/user/repo` or `npm:...`, declaring its entry points in
+      `package.json` under `pi.extensions`.
+    - `before_agent_start` can return a message, stored in the session and sent as a user message *after* the
+      prompt, until compaction summarizes it away.
+    - **The `context` event runs before every call to the model, each turn of a tool loop included**, gets a copy
+      of the messages without system messages, returns the messages to send, and stores nothing.
+    - `pi.registerTool` takes a JSON Schema, or TypeBox, and a tool is active once registered.
+    - No per-extension configuration; the docs suggest an extension's own config file.
+    - The SDK runs a session in memory (`createAgentSession`, `SessionManager.inMemory()`), and `pi-ai` has a
+      scripted model, `fauxProvider()`, for tests.
+  - **Read in the source, not documented:** a synthetic tool round in what `context` returns is allowed by its
+    types: an assistant message with a `toolCall` block, `stopReason: "toolUse"` and the current model's `api`,
+    `provider` and `model`, then a `toolResult`. pi's message conversion drops an assistant message whose
+    `stopReason` is `error` or `aborted`, and gives a tool call without a result an error result of its own.
+  - **Decided** (maintainer, 2026-11-26):
+    - **The `context` event, stateless, as the Open WebUI port**: on every call, the definitions for the terms in
+      the last user message and the four messages before it, as a `lorebook_lookup` tool round inserted before
+      that user message. Chosen over `before_agent_start`, which stores the definitions after the prompt, where
+      Raven measured them to work worse, and would need a record of what was given that compaction makes wrong.
+    - **A TypeScript ledger reader**, mirroring `lib/ledger.py`, in `ts/core/`, for LM Studio as well.
+    - **Settings in an optional `~/.pi/agent/grimoire.json`**, defaulting to Raven's own folders.
+    - **A footer status and a `/lorebook` command**, since nothing the `context` event inserts is shown.
+    - **Tests**: unit tests of the insertion, and one end-to-end test through pi's SDK with a scripted model,
+      checking that the tool round survives pi's own conversion.
+  - **Needs a live test:** the tool round reaching gufo intact; installing from a subdirectory of grimoire's
+    repository through a manifest in its root `package.json`.
 - **LM Studio**: the preprocessor can only prepend to the user's message, so the port marks what it injects.
 
 ## Order of work

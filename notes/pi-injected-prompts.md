@@ -97,6 +97,16 @@ grimoire's extension):
 
 Neither adds user-role text. That leaves skill and template commands, compaction, and the chat template.
 
+**Seen right after a tool call** (maintainer's observation): the model says the user wrote "(no content)", or
+that the user gave no instructions and the system prompt asks it to always continue after a tool call. Neither
+phrase is in pi 1.6.1: "(no content)" occurs only in the TUI's session tree, an empty tool result goes out as
+"(no tool output)", and pi's rules say nothing about continuing; nor are they in `pi-tps`, `date.ts` or the
+agent's `AGENTS.md`. **Qwen3.8's chat template** (read from the 27B's GGUF, unsloth's Q4_K_XL) **renders a tool
+result as a user turn**: `<|im_start|>user`, then the output in `<tool_response>` tags. So after a tool call the
+model's latest "user message" is the tool's output, and an empty or terse one reads as the user saying nothing.
+Where the two phrases come from is still open: the model's own wording, or the serving stack's template (Flash
+Next's was not read).
+
 **Open:** which of these was in play when the behaviour was seen — which extensions were installed (grimoire's
 included), and whether a skill command or compaction preceded it. The way to settle it is to capture a request
 body: pi's `onPayload` hook (`sdk.js`, line 274) exposes it, or llama.cpp's server can log it.

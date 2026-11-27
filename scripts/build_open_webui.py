@@ -6,7 +6,7 @@
 
 Open WebUI keeps a function or a tool as one file in its database, so each carries the core, the ledger reader
 and the port's own code, inlined verbatim in that order. The lines importing one inlined module from another
-are dropped, and each module is bound under its name after it, so `lorebookcore.select` still reads as written.
+are dropped, whether flat, relative or from the `grimoire` package, and each module is bound under its name after it, so `lorebookcore.select` still reads as written.
 A top-level name defined in two modules stops the build, since the later would silently replace the earlier.
 """
 
@@ -23,8 +23,8 @@ OUT = REPO / "open-webui"
 
 # Name -> source, in the order they are inlined; a later module may import an earlier one.
 MODULES = {
-    "lorebookcore": REPO / "core" / "lorebookcore.py",
-    "ledger": REPO / "lib" / "ledger.py",
+    "lorebookcore": REPO / "grimoire" / "lorebookcore.py",
+    "ledger": REPO / "grimoire" / "ledger.py",
     "lorebook_settings": SOURCE / "lorebook_settings.py",
 }
 TARGETS = {
@@ -37,7 +37,8 @@ REQUIRED_OPEN_WEBUI = "0.11.2"  # the `request` hook
 
 # The same import in two modules binds the same object, so it is no clash; neither is a module's `__all__`.
 _HARMLESS = {"__all__"}
-_IMPORT_OF_INLINED = re.compile(r"^(import (?P<plain>\w+)|from (?P<from>\w+) import .*)\n", re.MULTILINE)
+_IMPORT_OF_INLINED = re.compile(r"^(import (?P<plain>\w+)|from (?:\.|grimoire) import (?P<names>\w+(?:, \w+)*)"
+                                r"|from (?P<from>\w+) import .*)\n", re.MULTILINE)
 
 
 def _top_level_names(source: str) -> tuple[set[str], set[str]]:
@@ -56,11 +57,16 @@ def _top_level_names(source: str) -> tuple[set[str], set[str]]:
 
 def _without_inlined_imports(source: str, inlined: set[str]) -> str:
     def keep(match: re.Match) -> str:
+        if match.group("names"):
+            names = set(match.group("names").split(", "))
+            if not names <= inlined:
+                sys.exit(f"build_open_webui: {match.group(0).strip()!r} imports {sorted(names - inlined)}, not inlined before it")
+            return ""
         return "" if (match.group("plain") or match.group("from")) in inlined else match.group(0)
     return _IMPORT_OF_INLINED.sub(keep, source)
 
 def _raven_commit() -> str:
-    return (REPO / "core" / "RAVEN_COMMIT").read_text(encoding="utf-8").strip()[:12]
+    return (REPO / "grimoire" / "RAVEN_COMMIT").read_text(encoding="utf-8").strip()[:12]
 
 def _grimoire_commit() -> str:
     result = subprocess.run(["git", "-C", str(REPO), "rev-parse", "--short=12", "HEAD"], capture_output=True, text=True)

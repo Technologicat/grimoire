@@ -6,8 +6,8 @@
     python scripts/sync_core.py --check            # compare against Raven at the recorded commit
 
 The files are read out of Raven's git history, never its working tree, and the commit they came from is
-recorded in `core/RAVEN_COMMIT`. grimoire's own modules shared between ports, in `lib/`, are copied from the
-working tree. The TypeScript core's table of math symbols is regenerated from the synced Python core's. `--check`
+recorded in `grimoire/RAVEN_COMMIT`. grimoire's own modules shared between ports, in the `grimoire` package, are
+copied from the working tree. The TypeScript core's table of math symbols is regenerated from the synced Python core's. `--check`
 exits 1 if any copy differs from its source, or the table from the Python one, which is how CI holds the copies
 to being copies.
 """
@@ -20,29 +20,29 @@ import subprocess
 import sys
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
-CORE = REPO / "core"
-RECORD = CORE / "RAVEN_COMMIT"
-LIB = REPO / "lib"
-CLAUDE_CODE = REPO / "claude-code" / "scripts"
+PACKAGE = REPO / "grimoire"
+RECORD = PACKAGE / "RAVEN_COMMIT"
+CLAUDE_CODE = REPO / "claude-code" / "scripts" / "grimoire"
 TS_SRC = REPO / "ts" / "core" / "src"
 TS_CORE = TS_SRC / "lorebookcore.ts"
 LMSTUDIO_CORE = REPO / "lmstudio" / "src" / "core"
 
 # Raven's path → the copies in grimoire. The runner imports the core as `from .. import lorebookcore`, so the
-# layout under `core/` mirrors Raven's under `raven/librarian/`. A port that is installed by copying its own
-# directory, as a Claude Code plugin is, carries a copy of the core inside it.
+# layout of the `grimoire` package mirrors Raven's `raven/librarian/`. A port that is installed by copying its own
+# directory, as a Claude Code plugin is, carries a copy of the package inside it, with the modules it needs.
 FILES = {
-    "raven/librarian/lorebookcore.py": [CORE / "lorebookcore.py",
+    "raven/librarian/lorebookcore.py": [PACKAGE / "lorebookcore.py",
                                         CLAUDE_CODE / "lorebookcore.py"],
-    "raven/librarian/tests/lorebook_conformance.json": [CORE / "tests" / "lorebook_conformance.json"],
-    "raven/librarian/tests/test_lorebookcore.py": [CORE / "tests" / "test_lorebookcore.py"],
-    "raven/librarian/prompts/lorebook_expansion.md": [CORE / "prompts" / "lorebook_expansion.md"],
+    "raven/librarian/tests/lorebook_conformance.json": [PACKAGE / "tests" / "lorebook_conformance.json"],
+    "raven/librarian/tests/test_lorebookcore.py": [PACKAGE / "tests" / "test_lorebookcore.py"],
+    "raven/librarian/prompts/lorebook_expansion.md": [PACKAGE / "prompts" / "lorebook_expansion.md"],
 }
 
 # grimoire's own modules shared between ports → the copies inside the ports that need one. LM Studio builds a
 # plugin from its own folder, on the machine it is installed on, so the TypeScript core goes in as a copy too.
 LOCAL_FILES = {
-    LIB / "ledger.py": [CLAUDE_CODE / "ledger.py"],
+    PACKAGE / "__init__.py": [CLAUDE_CODE / "__init__.py"],
+    PACKAGE / "ledger.py": [CLAUDE_CODE / "ledger.py"],
     **{TS_SRC / name: [LMSTUDIO_CORE / name] for name in ("lorebookcore.ts", "pystr.ts", "difflib.ts", "ledger.ts")},
 }
 
@@ -72,7 +72,7 @@ _BACKSLASH = "\\"
 def ts_math_symbols() -> str:
     """The TypeScript core's `MATH_SYMBOLS` declaration, made from the Python core's `_MATH_SYMBOLS`: the same code
     point ranges, as `\\u{...}` escapes for a `u`-flag class, in lines of a hundred columns or so."""
-    spec = importlib.util.spec_from_file_location("synced_lorebookcore", CORE / "lorebookcore.py")
+    spec = importlib.util.spec_from_file_location("synced_lorebookcore", PACKAGE / "lorebookcore.py")
     core = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(core)
     chars, ranges, i = core._MATH_SYMBOLS, [], 0
@@ -117,7 +117,7 @@ def sync(raven: pathlib.Path, *, ref: str, fetch: bool) -> None:
     print(f"{'unchanged' if after == before else 'updated':>9}  {TS_CORE.relative_to(REPO)} (its math symbol table)")
     for source, targets in LOCAL_FILES.items():
         _write(source.read_bytes(), targets)
-    print(f"Synced from Raven {commit} ({ref}), and from lib/.")
+    print(f"Synced from Raven {commit} ({ref}), and from grimoire/.")
 
 def _write(content: bytes, targets: list[pathlib.Path]) -> None:
     for target in targets:
@@ -129,7 +129,7 @@ def _write(content: bytes, targets: list[pathlib.Path]) -> None:
 
 
 def check(raven: pathlib.Path) -> bool:
-    """Whether every copy matches its source: Raven at the recorded commit, or `lib/`. Reports each one."""
+    """Whether every copy matches its source: Raven at the recorded commit, or the `grimoire` package. Reports each one."""
     commit = RECORD.read_text(encoding="utf-8").strip()
     ok = True
     for source, targets in FILES.items():
@@ -142,7 +142,7 @@ def check(raven: pathlib.Path) -> bool:
     else:
         print(f"    stale  {TS_CORE.relative_to(REPO)}: its math symbol table differs from the Python core's")
         ok = False
-    print(f"{'Matches' if ok else 'Does not match'} Raven {commit}, and lib/.")
+    print(f"{'Matches' if ok else 'Does not match'} Raven {commit}, and grimoire/.")
     return ok
 
 def _compare(content: bytes, targets: list[pathlib.Path], source: str) -> bool:

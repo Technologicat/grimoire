@@ -23,8 +23,7 @@ import pathlib
 import re
 import time
 
-import ledger
-import lorebookcore
+from grimoire import ledger, lorebookcore
 
 # Characters rather than tokens, as the conformance cases count them. A hook's output is capped at 10,000
 # characters, beyond which Claude Code passes on only a file path and a preview, so one prompt's definitions

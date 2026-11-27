@@ -1,5 +1,5 @@
-// The conformance cases, `core/tests/lorebook_conformance.json`, against the translation. A port of Raven's runner,
-// `core/tests/test_lorebookcore.py`, which is the reference for what each section's fields mean.
+// The conformance cases, `grimoire/tests/lorebook_conformance.json`, against the translation. A port of Raven's runner,
+// `grimoire/tests/test_lorebookcore.py`, which is the reference for what each section's fields mean.
 
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -11,7 +11,7 @@ import { len } from "../src/pystr.ts";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the cases are JSON, read by field as Raven's runner reads them
 type Case = Record<string, any>;
-const CASES: Case = JSON.parse(readFileSync(new URL("../../../core/tests/lorebook_conformance.json", import.meta.url), "utf-8"));
+const CASES: Case = JSON.parse(readFileSync(new URL("../../../grimoire/tests/lorebook_conformance.json", import.meta.url), "utf-8"));
 
 /** A case's glossary: the name of one in the file's `glossaries`, or its own lines. */
 function textOf(glossary: string | string[]): string {

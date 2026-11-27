@@ -8,7 +8,7 @@ https://github.com/Technologicat/raven/tree/main/raven/librarian
     expansions = load_expansions(DEFAULT_DIRECTORY, entries)
     lorebookcore.find_matches(entries, text, expansions=expansions)
 
-Standard library only, beside a copy of `lorebookcore`.
+Standard library only, beside `lorebookcore` in its package.
 """
 
 __all__ = ["DEFAULT_DIRECTORY", "LEDGER_NAME",
@@ -22,7 +22,7 @@ import pathlib
 from collections.abc import Collection, Mapping
 from typing import Any
 
-import lorebookcore
+from . import lorebookcore
 
 DEFAULT_DIRECTORY = pathlib.Path.home() / ".config" / "raven" / "librarian" / "lorebook_expansion"
 LEDGER_NAME = "expansions"

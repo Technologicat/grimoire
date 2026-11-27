@@ -59,11 +59,12 @@ USER = {"role": "user", "content": "Is this a hydra tax?"}
 class TestGenerated:
     def test_each_file_runs_without_grimoire_on_the_path(self):
         # `-S` skips site-packages and the `.pth` files in it, the dev venv's editable install among them, which
-        # would put grimoire's own folders on the path; site-packages itself is then added back, for pydantic.
+        # would put the grimoire package on the path; site-packages itself is then added back, for pydantic.
         script = ("import importlib.util, sys\n"
                   f"sys.path.append({sysconfig.get_paths()['purelib']!r})\n"
-                  "try:\n    import ledger\nexcept ImportError:\n    pass\n"
-                  "else:\n    raise SystemExit('ledger is importable, so this check cannot tell whether it was inlined')\n"
+                  "for module in ('grimoire', 'ledger', 'lorebookcore'):\n"
+                  "    try:\n        __import__(module)\n    except ImportError:\n        pass\n"
+                  "    else:\n        raise SystemExit(f'{module} is importable, so this check cannot tell whether it was inlined')\n"
                   "for name in ('grimoire_filter', 'grimoire_tool'):\n"
                   f"    spec = importlib.util.spec_from_file_location(name, {str(HERE)!r} + f'/{{name}}.py')\n"
                   "    spec.loader.exec_module(importlib.util.module_from_spec(spec))\n"

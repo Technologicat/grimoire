@@ -1,7 +1,7 @@
 // The lorebook's core: parsing, matching, choosing what fires, and answering a lookup.
 //
 // A translation of Raven's `raven/librarian/lorebookcore.py`, which is the reference, held to the same conformance
-// cases (`core/tests/lorebook_conformance.json` in grimoire). The docstrings there are the full account of each
+// cases (`grimoire/tests/lorebook_conformance.json` in grimoire). The docstrings there are the full account of each
 // function; the comments here keep the reasons that bear on the code, and say where the translation differs.
 //
 // Where Python and JavaScript disagree about strings, the translation sides with Python, through `pystr.ts`: its

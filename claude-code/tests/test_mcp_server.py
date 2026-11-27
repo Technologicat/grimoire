@@ -8,6 +8,8 @@ import sys
 
 import pytest
 
+# Run with `-S`, keeping site-packages off the path, as on a machine with only the plugin: the dev venv has its
+# own grimoire there, which would stand in for the plugin's copy of the package.
 SERVER = pathlib.Path(__file__).parent.parent / "scripts" / "mcp_server.py"
 
 LOREBOOK = "## Hydra tax\nClosing one item opens two.\n\n## Fup\nNot a typo.\n"
@@ -25,7 +27,7 @@ def converse(messages, *, lorebook_dir="", ledger_dir="/nonexistent"):
     env = {**os.environ, "GRIMOIRE_LOREBOOK_DIR": str(lorebook_dir), "GRIMOIRE_LEDGER_DIR": str(ledger_dir),
            "GRIMOIRE_STEM_LANGUAGES": ""}
     lines = "".join((m if isinstance(m, str) else json.dumps(m)) + "\n" for m in messages)
-    result = subprocess.run([sys.executable, str(SERVER)], input=lines, capture_output=True, text=True, env=env,
+    result = subprocess.run([sys.executable, "-S", str(SERVER)], input=lines, capture_output=True, text=True, env=env,
                             timeout=30)
     assert result.returncode == 0, result.stderr
     return [json.loads(line) for line in result.stdout.splitlines()]
@@ -70,7 +72,7 @@ class TestLookup:
     def test_the_folder_is_read_at_every_call(self, lorebook):
         # One server, the definition edited between two calls to it.
         env = {**os.environ, "GRIMOIRE_LOREBOOK_DIR": str(lorebook), "GRIMOIRE_LEDGER_DIR": "/nonexistent"}
-        with subprocess.Popen([sys.executable, str(SERVER)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        with subprocess.Popen([sys.executable, "-S", str(SERVER)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                               text=True, env=env) as server:
             def ask(n):
                 server.stdin.write(json.dumps(call("fup", n)) + "\n")

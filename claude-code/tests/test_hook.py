@@ -9,6 +9,10 @@ import sys
 
 import pytest
 
+from grimoire import ledger
+
+# Run with `-S`, keeping site-packages off the path, as on a machine with only the plugin: the dev venv has its
+# own grimoire there, which would stand in for the plugin's copy of the package.
 HOOK = pathlib.Path(__file__).parent.parent / "scripts" / "hook.py"
 
 LOREBOOK = """\
@@ -38,7 +42,7 @@ def plugin(tmp_path):
         env["CLAUDE_PLUGIN_OPTION_LEDGER_DIR"] = str(tmp_path / "no-ledgers")
         env.update({f"CLAUDE_PLUGIN_OPTION_{key.upper()}": str(value) for key, value in options.items()})
         event = {"session_id": session, "prompt": prompt, "hook_event_name": "UserPromptSubmit"}
-        result = subprocess.run([sys.executable, str(HOOK), which], input=json.dumps(event),
+        result = subprocess.run([sys.executable, "-S", str(HOOK), which], input=json.dumps(event),
                                 capture_output=True, text=True, env=env)
         assert result.returncode == 0, f"a hook must never stop the prompt: {result.stderr}"
         return (json.loads(result.stdout) if result.stdout.strip() else None), result.stderr
@@ -108,11 +112,6 @@ class TestPrompt:
         assert len(text) < 10_000
 
     def test_an_inflected_term_fires_by_the_ledger(self, plugin, tmp_path):
-        sys.path.insert(0, str(HOOK.parent))
-        try:
-            import ledger
-        finally:
-            sys.path.remove(str(HOOK.parent))
         assert plugin("prompt", prompt="Two hydra taxes.")[0] is None, \
             "the term fires without its forms, so this fixture cannot tell whether the ledger was read"
         ledgers = tmp_path / "ledgers"
@@ -132,7 +131,7 @@ class TestNeverStopsThePrompt:
         assert plugin("prompt", prompt="A hydra tax.", lorebook_dir=tmp_path / "nowhere")[0] is None
 
     def test_a_bad_event_is_reported_and_the_prompt_goes_ahead(self, plugin):
-        result = subprocess.run([sys.executable, str(HOOK), "prompt"], input="not json", capture_output=True,
+        result = subprocess.run([sys.executable, "-S", str(HOOK), "prompt"], input="not json", capture_output=True,
                                 text=True, env={**os.environ, "CLAUDE_PLUGIN_OPTION_LOREBOOK_DIR": str(plugin.lorebook),
                                                 "CLAUDE_PLUGIN_DATA": str(plugin.data)})
         assert result.returncode == 0

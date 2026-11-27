@@ -6,7 +6,7 @@ import json
 
 from pydantic import Field
 
-import lorebookcore
+from grimoire import lorebookcore
 from lorebook_settings import LorebookValves, grimoire_log, read_lorebook
 
 # Raven's scan and depth. Characters rather than tokens, as the conformance cases count them.

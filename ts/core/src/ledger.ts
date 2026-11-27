@@ -1,4 +1,4 @@
-// The lorebook's inflected forms, read from Raven's sweep ledgers. A translation of grimoire's `lib/ledger.py`,
+// The lorebook's inflected forms, read from Raven's sweep ledgers. A translation of grimoire's `grimoire/ledger.py`,
 // which is the reference: see its docstrings for the rules, and Raven's `sweep-ledger.md` for the format.
 //
 //     const expansions = loadExpansions(DEFAULT_DIRECTORY, entries);

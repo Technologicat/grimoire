@@ -1,4 +1,4 @@
-// The TypeScript ledger reader, with the cases of grimoire's `lib/tests/test_ledger.py`.
+// The TypeScript ledger reader, with the cases of grimoire's `grimoire/tests/test_ledger.py`.
 
 import { mkdtempSync, rmSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

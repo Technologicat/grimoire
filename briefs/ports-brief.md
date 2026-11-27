@@ -52,7 +52,7 @@ TypeScript, so one translation of the core serves both.
   (maintainer):
   - **TypeScript in strict mode, type-checked with `tsc --noEmit`; tests in vitest**, its diffs of deep
     structures being what makes a failing conformance case quick to read. Each conformance section is a
-    `test.each` over `core/tests/lorebook_conformance.json`, read in place: one copy of the spec for both languages.
+    `test.each` over `grimoire/tests/lorebook_conformance.json`, read in place: one copy of the spec for both languages.
   - **npm workspaces from a root `package.json`**, the core in `ts/core/`, pi and LM Studio later workspaces.
   - **Node 22 is the floor**, the oldest line still supported; CI runs 22, 24 and 26.
   - **No linter yet.** Biome, once there is more than one TypeScript package.
@@ -356,19 +356,22 @@ carries a generator of its own, which every port's users can run.
 
 ## Project hygiene
 
-- **grimoire becomes a proper package** (maintainer, 2026-11-24). The wheel installs its modules top-level,
-  `lorebookcore`, `ledger` and `expand`, which is harmless in pipx's venv of its own and invites a collision in a
-  shared one. **The plan, agreed 2026-11-27:**
-  - **`lib/` becomes `grimoire/`**, a package at the repository root; `ledger.py` and `expand.py` import relatively
-    (`from . import lorebookcore`). The sync script copies the core and the prompt into it as well, held by
-    `--check`. The console script is `grimoire-expand = grimoire.expand:main`, an ordinary editable install, with
-    hatchling's `sources` mapping and `dev-mode-dirs` gone.
-  - **The Claude Code plugin's copies become a subpackage, `claude-code/scripts/grimoire/`**; the hook and the MCP
-    server import `from grimoire import ledger, lorebookcore`, their own folder being on the path. Recheck the live
-    plugin afterwards (`claude plugin update grimoire@grimoire`, then `/reload-plugins`).
-  - **The Open WebUI build strips `from . import X` lines** as well as `import X`; its output should not change, and
-    the test that the generated files are current says whether it did.
-  - **The tests import from `grimoire`.**
+- **grimoire is a proper package** (asked for by the maintainer, 2026-11-24; done 2026-11-27). Its wheel had
+  installed `lorebookcore`, `ledger` and `expand` as top-level modules, harmless in pipx's venv of its own and a
+  collision waiting in a shared one. As built:
+  - **`grimoire/` is the package**, at the repository root: `ledger.py` and `expand.py`, importing relatively,
+    beside Raven's core, prompt, conformance cases and runner, synced into it. **`core/` went into it too**, a change
+    from the plan, which had the sync copy the core into the package as well: the runner's `from .. import
+    lorebookcore` works as well against the package as against `core/`, so the package mirrors Raven's
+    `raven/librarian/`, with one copy of the core fewer. The console script is `grimoire.expand:main`; the wheel is
+    `packages = ["grimoire"]` without its tests, and an ordinary editable install.
+  - **The Claude Code plugin carries the package as `claude-code/scripts/grimoire/`**: its `__init__.py`, the core
+    and `ledger`. The hook and the MCP server import `from grimoire import ledger, lorebookcore`, their own folder
+    being first on the path. Their tests run them with `python -S`, since the dev venv's own grimoire would
+    otherwise stand in for the plugin's copy: before that, they passed with the copy deleted.
+  - **The Open WebUI sources import from the package too**, and the build strips `from grimoire import ...` and
+    `from . import ...` as well as `import X`, stopping on a name not inlined before it. Its output changed only
+    in the section headers' paths.
   - **Rejected**: keeping the imports flat and trying a relative import first in each module, falling back to an
     absolute one. Fewer files to touch, but a fallback import in every shipped module.
 

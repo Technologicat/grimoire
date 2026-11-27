@@ -20,8 +20,7 @@ import json
 import os
 from typing import Any
 
-import ledger
-import lorebookcore
+from grimoire import ledger, lorebookcore
 
 SERVER_INFO = {"name": "grimoire", "version": "0"}
 

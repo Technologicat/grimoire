@@ -5,8 +5,7 @@ import os
 
 import pytest
 
-import ledger
-import lorebookcore
+from grimoire import ledger, lorebookcore
 
 GLOSSARY = "## Hydra tax\nClosing one item opens two.\n\n## Fup\nNot a typo.\n"
 FINGERPRINT = "0123abcd"

@@ -1,4 +1,4 @@
-// The TypeScript core's table of math symbols against the Python core's, read out of `core/lorebookcore.py`.
+// The TypeScript core's table of math symbols against the Python core's, read out of `grimoire/lorebookcore.py`.
 
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
@@ -6,7 +6,7 @@ import { MATH_SYMBOLS } from "../src/lorebookcore.ts";
 
 /** The Python core's `_MATH_SYMBOLS`, as the string Python makes of the literal: escapes decoded. */
 function pythonTable(): string {
-  const source = readFileSync(new URL("../../../core/lorebookcore.py", import.meta.url), "utf-8");
+  const source = readFileSync(new URL("../../../grimoire/lorebookcore.py", import.meta.url), "utf-8");
   const literal = /^_MATH_SYMBOLS = \(([\s\S]*?)\)$/m.exec(source);
   expect(literal, "no `_MATH_SYMBOLS = (...)` in the Python core").not.toBeNull();
   const joined = [...literal![1]!.matchAll(/"([^"]*)"/g)].map((m) => m[1]).join("");

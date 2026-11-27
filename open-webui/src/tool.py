@@ -2,7 +2,7 @@
 
 __all__ = ["Tools"]
 
-import lorebookcore
+from grimoire import lorebookcore
 from lorebook_settings import LorebookValves, read_lorebook
 
 

@@ -6,8 +6,7 @@ import logging
 
 from pydantic import BaseModel, Field
 
-import ledger
-import lorebookcore
+from grimoire import ledger, lorebookcore
 
 grimoire_log = logging.getLogger("grimoire")
 

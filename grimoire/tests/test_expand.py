@@ -7,9 +7,7 @@ import threading
 
 import pytest
 
-import expand
-import ledger
-import lorebookcore
+from grimoire import expand, ledger, lorebookcore
 
 GLOSSARY = "## Hydra tax\nClosing one item opens two.\n\n## Fup\nNot a typo.\n\n## Duolect\nTwo voices.\n"
 TERM_LINE = re.compile(r"^(\d+)\. (.+) — inflect: (\S+)$", re.MULTILINE)

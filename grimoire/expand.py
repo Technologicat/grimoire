@@ -8,8 +8,7 @@ Raven's prompt, and the answers go to a ledger in Raven's format (Raven's `sweep
 by default: where grimoire's ports, and Raven, read them. A run asks only the terms without a current answer,
 so an interrupted run is resumed by running it again, and a run after an edit asks only the edited terms.
 
-Standard library only, beside copies of `lorebookcore` and `ledger`, and Raven's prompt in `prompts/` beside the
-core.
+Standard library only, beside `lorebookcore` and `ledger` in its package, and Raven's prompt in `prompts/`.
 """
 
 __all__ = ["DEFAULT_LANGUAGES", "BATCH_SIZE",
@@ -30,8 +29,7 @@ import urllib.request
 from collections.abc import Callable, Mapping
 from typing import Any
 
-import ledger
-import lorebookcore
+from . import ledger, lorebookcore
 
 DEFAULT_LANGUAGES = {"English": "forms"}  # Raven's default
 BATCH_SIZE = 10  # Raven's

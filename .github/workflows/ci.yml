@@ -85,14 +85,15 @@ jobs:
     - run: npm test
 
   core-unedited:
-    # The files under core/ are Raven's. This fetches Raven at the commit they were synced from and
-    # compares them byte for byte, so an edit made here fails CI instead of being lost at the next sync.
+    # The files the sync takes from Raven, in the grimoire package and the Claude Code plugin. This fetches
+    # Raven at the commit they were synced from and compares them byte for byte, so an edit made here fails CI
+    # instead of being lost at the next sync.
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     - name: Fetch Raven at the recorded commit
       run: |
         git init -q raven
-        git -C raven fetch -q --depth 1 https://github.com/Technologicat/raven.git "$(cat core/RAVEN_COMMIT)"
+        git -C raven fetch -q --depth 1 https://github.com/Technologicat/raven.git "$(cat grimoire/RAVEN_COMMIT)"
     - name: Compare the synced files
       run: python3 scripts/sync_core.py --check --raven raven

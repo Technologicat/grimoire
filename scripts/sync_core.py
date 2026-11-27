@@ -24,7 +24,9 @@ CORE = REPO / "core"
 RECORD = CORE / "RAVEN_COMMIT"
 LIB = REPO / "lib"
 CLAUDE_CODE = REPO / "claude-code" / "scripts"
-TS_CORE = REPO / "ts" / "core" / "src" / "lorebookcore.ts"
+TS_SRC = REPO / "ts" / "core" / "src"
+TS_CORE = TS_SRC / "lorebookcore.ts"
+LMSTUDIO_CORE = REPO / "lmstudio" / "src" / "core"
 
 # Raven's path → the copies in grimoire. The runner imports the core as `from .. import lorebookcore`, so the
 # layout under `core/` mirrors Raven's under `raven/librarian/`. A port that is installed by copying its own
@@ -37,9 +39,11 @@ FILES = {
     "raven/librarian/prompts/lorebook_expansion.md": [CORE / "prompts" / "lorebook_expansion.md"],
 }
 
-# grimoire's own modules shared between ports → the copies inside the ports that need one.
+# grimoire's own modules shared between ports → the copies inside the ports that need one. LM Studio builds a
+# plugin from its own folder, on the machine it is installed on, so the TypeScript core goes in as a copy too.
 LOCAL_FILES = {
     LIB / "ledger.py": [CLAUDE_CODE / "ledger.py"],
+    **{TS_SRC / name: [LMSTUDIO_CORE / name] for name in ("lorebookcore.ts", "pystr.ts", "difflib.ts", "ledger.ts")},
 }
 
 
@@ -106,12 +110,13 @@ def sync(raven: pathlib.Path, *, ref: str, fetch: bool) -> None:
     for source, targets in FILES.items():
         _write(read(raven, commit, source), targets)
     RECORD.write_text(commit + "\n", encoding="utf-8")
-    for source, targets in LOCAL_FILES.items():
-        _write(source.read_bytes(), targets)
+    # The table first, since the TypeScript core is itself copied into a port below.
     before = TS_CORE.read_text(encoding="utf-8")
     after = _ts_with_table(before)
     TS_CORE.write_text(after, encoding="utf-8")
     print(f"{'unchanged' if after == before else 'updated':>9}  {TS_CORE.relative_to(REPO)} (its math symbol table)")
+    for source, targets in LOCAL_FILES.items():
+        _write(source.read_bytes(), targets)
     print(f"Synced from Raven {commit} ({ref}), and from lib/.")
 
 def _write(content: bytes, targets: list[pathlib.Path]) -> None:

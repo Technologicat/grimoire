@@ -79,6 +79,8 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm ci
+    # The LM Studio plugin has a lockfile of its own, LM Studio installing it from its own folder.
+    - run: npm ci --prefix lmstudio
     - run: npm run typecheck
     - run: npm test
 

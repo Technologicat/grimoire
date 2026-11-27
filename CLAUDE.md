@@ -30,7 +30,8 @@ regenerates from the Python core's `_MATH_SYMBOLS`, and `--check` holds to it.
 **grimoire's own code shared between ports lives in `lib/`**, and a port that is installed by copying its own
 directory carries a copy, written by the same sync script: `claude-code/scripts/ledger.py` is `lib/ledger.py`.
 Edit the one in `lib/`, then run `python scripts/sync_core.py`; `--check` fails on a copy that differs from
-its source. Tests for `lib/` are in `lib/tests/`, and import the modules side by side with the core, as a
+its source. The same holds for the LM Studio plugin's `lmstudio/src/core/`: copies of `ts/core/src/`, since LM Studio
+builds a plugin from its own folder alone. Tests for `lib/` are in `lib/tests/`, and import the modules side by side with the core, as a
 port's copies sit.
 
 ## The Open WebUI plugins are generated

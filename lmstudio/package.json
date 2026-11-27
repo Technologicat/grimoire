@@ -1,0 +1,11 @@
+{
+  "name": "grimoire-lmstudio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "grimoire for LM Studio: the definitions of your own terms as they come up, and a lookup tool.",
+  "license": "BSD-2-Clause",
+  "type": "module",
+  "dependencies": {
+    "@lmstudio/sdk": "2.1.0"
+  }
+}

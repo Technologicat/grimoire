@@ -16,6 +16,7 @@ if sys.version_info < (3, 11):  # before the imports, which need 3.11
     print(f"grimoire: needs Python 3.11 or later, but `python3` is {sys.version.split()[0]}", file=sys.stderr)
     sys.exit(0)
 
+import hashlib
 import json
 import os
 import pathlib
@@ -29,12 +30,14 @@ import lorebookcore
 # characters, beyond which Claude Code passes on only a file path and a preview, so one prompt's definitions
 # stay under that with room for the heading.
 PROMPT_BUDGET = 8_000
-SESSION_BUDGET = 32_000
+SESSION_BUDGET = 64_000
 MAX_DEPTH = 2
 SESSION_RECORD_DAYS = 30  # a session's record left untouched this long is removed
 
 HEADING = "Definitions from the user's lorebook, for terms in their message:"
 SEPARATOR = "\n\n---\n\n"
+# Before a definition edited since this session was given it, so that the model knows why it comes again.
+CHANGED_NOTE = "(Changed on disk since it was given earlier in this conversation.)\n\n"
 
 
 def option(key: str) -> str:
@@ -52,13 +55,23 @@ def _record_path(session_id: str) -> pathlib.Path:
     # The id becomes a filename, so anything that is not plainly safe in one is replaced.
     return _sessions_dir() / f"{re.sub(r'[^A-Za-z0-9_-]', '_', session_id)}.json"
 
+def digest(entry: lorebookcore.Entry) -> str:
+    """What says an entry is the one that was given: sixteen hex digits of the SHA-256 of its text as given."""
+    return hashlib.sha256(lorebookcore.format_entry(entry).encode("utf-8")).hexdigest()[:16]
+
 def read_record(session_id: str) -> dict:
-    """What this session was given: `{"given": [entry ids], "spent": characters}`."""
+    """What this session was given: `{"given": {entry id: digest of the text given}, "spent": characters}`.
+
+    A record that lists the ids alone, as an earlier version wrote, reads as given with no digest: `None`.
+    """
     try:
         record = json.loads(_record_path(session_id).read_text(encoding="utf-8"))
     except (OSError, ValueError):
-        return {"given": [], "spent": 0}
-    return {"given": list(record.get("given", [])), "spent": int(record.get("spent", 0))}
+        return {"given": {}, "spent": 0}
+    given = record.get("given", {})
+    if isinstance(given, list):
+        given = dict.fromkeys(given)
+    return {"given": dict(given), "spent": int(record.get("spent", 0))}
 
 def write_record(session_id: str, record: dict) -> None:
     path = _record_path(session_id)
@@ -102,18 +115,27 @@ def on_prompt(event: dict) -> dict | None:
         return None
     expansions = ledger.load_expansions(option("ledger_dir") or ledger.DEFAULT_DIRECTORY, entries,
                                         stem_languages=_languages(option("stem_languages")))
-    # Each entry is counted with the separator before it, so the definitions with their separators stay
-    # within the budget however many there are.
-    firings = lorebookcore.select(entries, event.get("prompt", ""),
-                                  count_tokens=lambda text: len(text) + len(SEPARATOR),
-                                  budget=budget, max_depth=MAX_DEPTH, already_fired=set(record["given"]),
+    # Given and unchanged: the digest matches, or there is none to compare. Given but edited since: may fire
+    # again, with a note.
+    unchanged = {entry_id for entry_id, given in record["given"].items()
+                 if entry_id in entries and given in (None, digest(entries[entry_id]))}
+    changed = {entry_id for entry_id in record["given"] if entry_id in entries and entry_id not in unchanged}
+    changed_texts = {lorebookcore.format_entry(entries[entry_id]) for entry_id in changed}
+
+    # Each entry is counted with the separator before it, and the note where it gets one, so the definitions
+    # stay within the budget however many there are.
+    def size(text: str) -> int:
+        return len(text) + len(SEPARATOR) + (len(CHANGED_NOTE) if text in changed_texts else 0)
+    firings = lorebookcore.select(entries, event.get("prompt", ""), count_tokens=size,
+                                  budget=budget, max_depth=MAX_DEPTH, already_fired=unchanged,
                                   expansions=expansions)
     if not firings:
         return None
 
-    write_record(session_id, {"given": record["given"] + [firing.entry.id for firing in firings],
+    write_record(session_id, {"given": record["given"] | {firing.entry.id: digest(firing.entry) for firing in firings},
                               "spent": record["spent"] + sum(firing.tokens for firing in firings)})
-    context = HEADING + "".join(SEPARATOR + lorebookcore.format_entry(firing.entry) for firing in firings)
+    context = HEADING + "".join(SEPARATOR + (CHANGED_NOTE if firing.entry.id in changed else "") +
+                                lorebookcore.format_entry(firing.entry) for firing in firings)
     return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}
 
 def _languages(setting: str) -> set[str]:

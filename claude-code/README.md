@@ -44,7 +44,8 @@ with your message.
 ## What it does
 
 **When you send a message, the definitions of the terms in it are added for Claude to read**, together with the
-entries their definitions link to, up to two links deep. Each entry is given once per session.
+entries their definitions link to, up to two links deep. Each entry is given once per session, unless you edit
+it: then it is given again when its term next comes up, with a note that it changed.
 
 - **Inflected forms** match only if the inflected forms folder has them: Raven generates them with an LLM and
   keeps them in ledgers there. Without them, a term matches only as it is written in the lorebook, so "hydra
@@ -63,5 +64,5 @@ gets the entry, a near miss taken as meant, the entries that mention the term, o
 - **After compaction, earlier definitions come back only as their terms come up again.** Compaction summarizes
   them away, and grimoire then forgets it gave them, rather than giving them all again at once, since everything
   a long session was given would not fit in one hook's output.
-- **At most 8,000 characters of definitions per message, and 32,000 per session.** Past those, the remaining
+- **At most 8,000 characters of definitions per message, and 64,000 per session.** Past those, the remaining
   definitions are not given.

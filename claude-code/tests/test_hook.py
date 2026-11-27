@@ -76,12 +76,30 @@ class TestPrompt:
         assert plugin("prompt", prompt="A hydra tax.")[0] is not None
 
     def test_the_session_budget_runs_out(self, plugin):
-        # Each of these entries costs 4,000 characters or so, so a session's 32,000 hold seven.
+        # Each of these entries costs 4,000 characters or so, so a session's 64,000 hold fifteen.
         (plugin.lorebook / "big.md").write_text(
-            "".join(f"## Term{n}\n{'x' * 4_000}\n\n" for n in range(10)), encoding="utf-8")
-        given = [plugin("prompt", prompt=f"term{n}")[0] is not None for n in range(10)]
-        assert given[:7] == [True] * 7
-        assert given[7:] == [False] * 3
+            "".join(f"## Term{n}\n{'x' * 4_000}\n\n" for n in range(20)), encoding="utf-8")
+        given = [plugin("prompt", prompt=f"term{n}")[0] is not None for n in range(20)]
+        assert given[:15] == [True] * 15
+        assert given[15:] == [False] * 5
+
+    def test_an_edited_definition_is_given_again_with_a_note(self, plugin):
+        first = context(plugin("prompt", prompt="A hydra tax.")[0])
+        assert "Changed on disk" not in first
+        assert plugin("prompt", prompt="A hydra tax.")[0] is None, \
+            "an unchanged entry was given again, so this fixture cannot tell an edit from a repeat"
+        glossary = plugin.lorebook / "glossary.md"
+        glossary.write_text(glossary.read_text(encoding="utf-8").replace("opens two", "opens three"), encoding="utf-8")
+        again = context(plugin("prompt", prompt="A hydra tax.")[0])
+        assert "Changed on disk" in again and "opens three" in again
+        assert "What an open item costs." not in again, "the unchanged entry it links to was given again"
+        assert plugin("prompt", prompt="A hydra tax.")[0] is None, "the edited entry is given once more, then not"
+
+    def test_a_record_listing_ids_alone_reads_as_given_and_unchanged(self, plugin):
+        sessions = plugin.data / "sessions"
+        sessions.mkdir(parents=True)
+        (sessions / "s1.json").write_text(json.dumps({"given": ["hydra-tax", "attention-rent"], "spent": 100}), encoding="utf-8")
+        assert plugin("prompt", prompt="A hydra tax.")[0] is None
 
     def test_one_prompts_definitions_stay_under_the_hook_output_cap(self, plugin):
         (plugin.lorebook / "many.md").write_text("".join(f"## T{n}\nx\n\n" for n in range(2_000)), encoding="utf-8")

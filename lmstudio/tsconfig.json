@@ -1,4 +1,7 @@
 {
   "extends": "../ts/core/tsconfig.json",
+  // LM Studio bundles the plugin with esbuild, into CommonJS; this says so to the type checker. The package must not
+  // declare "type": "module", or Node reads the bundle, `production.js`, as an ES module, and it fails to load.
+  "compilerOptions": { "module": "preserve", "moduleResolution": "bundler" },
   "include": ["src", "test"]
 }

@@ -358,10 +358,28 @@ carries a generator of its own, which every port's users can run.
 
 - **grimoire becomes a proper package** (maintainer, 2026-11-24). The wheel installs its modules top-level,
   `lorebookcore`, `ledger` and `expand`, which is harmless in pipx's venv of its own and invites a collision in a
-  shared one. Kept apart from the Open WebUI port, which inlines its modules and does not depend on it. The
-  question to settle is how a package fits the ports' copies, which import each other side by side.
+  shared one. **The plan, agreed 2026-11-27:**
+  - **`lib/` becomes `grimoire/`**, a package at the repository root; `ledger.py` and `expand.py` import relatively
+    (`from . import lorebookcore`). The sync script copies the core and the prompt into it as well, held by
+    `--check`. The console script is `grimoire-expand = grimoire.expand:main`, an ordinary editable install, with
+    hatchling's `sources` mapping and `dev-mode-dirs` gone.
+  - **The Claude Code plugin's copies become a subpackage, `claude-code/scripts/grimoire/`**; the hook and the MCP
+    server import `from grimoire import ledger, lorebookcore`, their own folder being on the path. Recheck the live
+    plugin afterwards (`claude plugin update grimoire@grimoire`, then `/reload-plugins`).
+  - **The Open WebUI build strips `from . import X` lines** as well as `import X`; its output should not change, and
+    the test that the generated files are current says whether it did.
+  - **The tests import from `grimoire`.**
+  - **Rejected**: keeping the imports flat and trying a relative import first in each module, falling back to an
+    absolute one. Fewer files to touch, but a fallback import in every shipped module.
 
 ## Open questions
 
-- Which Raven commit a release of grimoire pins its core to, and how often to sync.
+- Which Raven commit a release of grimoire pins its core to, and how often to sync. **Raven 0.2.11, once released**
+  (maintainer, 2026-11-27): the lorebook is new in 0.2.11, the latest release, 0.2.10, has none, and pinning to
+  whatever `main` happens to be is not a principled choice. Until then grimoire syncs from `main`, recording the
+  commit.
+- **A live test of LM Studio with a larger model** (maintainer, 2026-11-27): Qwen3.8 27B, and perhaps 35B-A3B, need
+  their settings tuned (GPU layers, context length; `lms load` can set both) to load on the work machine's
+  dedicated GPU, with the rest in RAM. Worth doing anyway: on the road that machine runs without its external GPU,
+  with 64 GB of RAM and 16 GB of VRAM.
 - Whether the TypeScript ports share one package, or each carries the core.

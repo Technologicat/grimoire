@@ -37,6 +37,10 @@ message, before its text**, between markers, with the entries their definitions 
 LM Studio keeps your message as rewritten, so the definitions stay in the chat, and each is given once per chat,
 unless you edit it: then it is given again when its term next comes up, with a note that it changed.
 
+**In the chat** (as of LM Studio 0.4.29), your message shows as you typed it, the definitions given are named in a
+status line under the answer, and LM Studio sends the model the rewritten message. Regenerating an answer rewrites
+your message afresh, so its definitions are not given twice.
+
 **The model can also look a term up**, with the `lorebook_lookup` tool, for one whose definition was not given: it
 gets the entry, a near miss taken as meant, the entries that mention the term, or a plain "not defined".
 

@@ -7,7 +7,7 @@ coinages, a field's jargon, the special sense you give an ordinary word. The def
 Markdown files, each entry a section whose header is the term. Raven-librarian reads such a folder; grimoire
 lets Claude Code, Open WebUI, pi and LM Studio read the same one.
 
-**Status: early.** The Claude Code, Open WebUI and pi ports work; LM Studio is still to come.
+**Status: early.** All four ports work: Claude Code, Open WebUI, pi and LM Studio.
 
 ## Claude Code
 
@@ -35,6 +35,17 @@ pi install git:github.com/Technologicat/grimoire
 ```
 
 Its settings, what it does and its limitations: [`pi/README.md`](pi/README.md).
+
+## LM Studio
+
+A plugin. From a checkout of grimoire, with LM Studio running:
+
+```
+cd lmstudio
+lms dev --install
+```
+
+Its settings, what it does and its limitations: [`lmstudio/README.md`](lmstudio/README.md).
 
 ## Inflected forms
 

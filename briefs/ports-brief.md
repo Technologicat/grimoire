@@ -298,9 +298,22 @@ The porting guide's *Hosts* section has it in full. In short:
       SDK's own `Chat` classes.
   - **The Claude Code port follows** (maintainer, 2026-11-26): it gives an edited definition again too, with the same
     note. Its record is by entry id today, so it has to record what each given entry said, or compare against it.
-  - **Needs a live test, in the app:** whether the chat shows the rewritten message or the original; whether a
-    regenerated answer runs the preprocessor again; the tool; whether a local model reads definitions placed in the
-    user's message, in front of the question.
+  - **Found in installing** (2026-11-27): the plugin failed to start under `"type": "module"` in its `package.json`,
+    Node reading LM Studio's CommonJS bundle, `production.js`, as an ES module. The package declares no type, and a
+    test holds it so.
+  - **Observed live** (2026-11-27, LM Studio 0.4.29-2, SDK 2.1.0, Qwen 3.5 9B, installed with `lms dev --install`,
+    which copies the plugin's folder and builds it there):
+    - **LM Studio keeps both versions of the user's message**: `content`, as typed, which the chat shows, and
+      `preprocessed`, the rewrite, which the model is sent. The chat shows the plugin's status line ("Lorebook:
+      Prequisite, Upstream lift, …") under the answer, and a tool call as an expandable block: of the four
+      frontends, the one that shows best what was given (Juha's judgement).
+    - **`pullHistory()` returns the earlier messages' `preprocessed` text**, so given-once works: a second message
+      asking about the same term was given nothing, and went to the model as typed.
+    - **Regenerating runs the preprocessor again**, and the rewrite replaces `preprocessed`: one block, not two.
+    - **The definitions are used**, and the tool works: the 9B answered from the definition, and on the first try
+      also looked the term up, getting the same entry; regenerated, it used the definition alone. Juha reads the
+      redundant lookup as the model's size; he expects the 27B to behave better, but it needs settings tuned to load
+      on the work machine's GPU.
 - **The budgets, across the ports** (maintainer, 2026-11-26): **8,000 characters per message and 64,000 per
   conversation** as the defaults, where a port has a per-conversation cap (Claude Code, LM Studio); the stateless
   ports (Open WebUI, pi) have only the first. Claude Code's per-session cap is 32,000 today: to raise to 64,000

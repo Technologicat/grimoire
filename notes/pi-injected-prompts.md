@@ -84,6 +84,19 @@ In `pi-coding-agent/dist/core/agent-session.js`:
 - *Inference:* llama.cpp's chat template rendering the replayed `reasoning_content`, or a long system prompt,
   badly.
 
+**Checked against the setup it was seen in** (the work machine's pi, 2026-11-27; the behaviour predates
+grimoire's extension):
+
+- **`pi-tps`** (the `feat/exchange-stats` branch of the maintainer's fork) stores its telemetry with
+  `pi.appendEntry`, which makes a session entry of type `custom`. `sessionEntryToContextMessages`
+  (`pi-coding-agent/dist/core/session-manager.js`, line 166) passes on only messages, `custom_message` entries
+  (what `sendMessage` makes), branch summaries and compactions; a `custom` entry becomes nothing. So it never reaches
+  the model.
+- **A local `date.ts`** sets a system prompt section, `current_date`, in `before_agent_start`: system text, folded
+  into the leading `system` message.
+
+Neither adds user-role text. That leaves skill and template commands, compaction, and the chat template.
+
 **Open:** which of these was in play when the behaviour was seen — which extensions were installed (grimoire's
 included), and whether a skill command or compaction preceded it. The way to settle it is to capture a request
 body: pi's `onPayload` hook (`sdk.js`, line 274) exposes it, or llama.cpp's server can log it.

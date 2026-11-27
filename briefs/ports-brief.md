@@ -314,6 +314,9 @@ The porting guide's *Hosts* section has it in full. In short:
       also looked the term up, getting the same entry; regenerated, it used the definition alone. Juha reads the
       redundant lookup as the model's size; he expects the 27B to behave better, but it needs settings tuned to load
       on the work machine's GPU.
+    - **With a larger model** (2026-11-27, Qwen3.6 35B-A3B at 256 Ki, tuned to the work machine's GPU): the
+      definitions were given and used, with no lookup; a later message asking about the same term was given
+      nothing and went to the model as typed.
 - **The budgets, across the ports** (maintainer, 2026-11-26): **8,000 characters per message and 64,000 per
   conversation** as the defaults, where a port has a per-conversation cap (Claude Code, LM Studio); the stateless
   ports (Open WebUI, pi) have only the first. Claude Code's per-session cap is 32,000 today: to raise to 64,000
@@ -381,8 +384,4 @@ carries a generator of its own, which every port's users can run.
   (maintainer, 2026-11-27): the lorebook is new in 0.2.11, the latest release, 0.2.10, has none, and pinning to
   whatever `main` happens to be is not a principled choice. Until then grimoire syncs from `main`, recording the
   commit.
-- **A live test of LM Studio with a larger model** (maintainer, 2026-11-27): Qwen3.8 27B, and perhaps 35B-A3B, need
-  their settings tuned (GPU layers, context length; `lms load` can set both) to load on the work machine's
-  dedicated GPU, with the rest in RAM. Worth doing anyway: on the road that machine runs without its external GPU,
-  with 64 GB of RAM and 16 GB of VRAM.
 - Whether the TypeScript ports share one package, or each carries the core.
